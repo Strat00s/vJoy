@@ -13,7 +13,7 @@ To build the project:
 
 Caution:
 You will need to install Visual Studio 2019 Community (Free) + WDK and MFC/ATL libraires with Spectre mitigation and InnoSetup 6.0.
-To build the entire project including the driver you need to install the SDK and puchase a license to sign drivers.
+To build the entire project including the driver you need to install the SDK and purchase a valide EV Code Signing certificate to sign drivers.
 
 Justin's notes are now at the end of this document.
 
@@ -21,7 +21,7 @@ Justin's notes are now at the end of this document.
 
 1. Install VS2019 Community + Runtime/MFC/ATL Spectre mitigated librairies,
 all for v142.
-2. Install last WDK (10.0.18362.0) and last Windows 10 SDK (10.0.18362.0).
+2. Install WDK 10.0.19041.0 and Windows 10 SDK 10.0.19041.0 (see tools/ directory) .
 3. Install Inno Setup 6.
 4. DigiCert utility is provided in the git tree for now, but you need a valid EV
 certificate.

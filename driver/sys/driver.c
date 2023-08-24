@@ -84,7 +84,9 @@ Return Value:
 --*/
 {
 
+    // NTSTATUS variable to record success or failure
     NTSTATUS				status = STATUS_SUCCESS;
+    // Allocate the driver configuration object
     WDF_DRIVER_CONFIG		config;
     //WDF_OBJECT_ATTRIBUTES	attributes;
     WDFDRIVER				hDriver;
@@ -93,32 +95,19 @@ Return Value:
     // Initialize WPP Tracing
     //
     WPP_INIT_TRACING(DriverObject, RegistryPath);
-    // TraceEvents(TRACE_LEVEL_INFORMATION, DBG_INIT, "vJoy Driver Built %s %s\n", __DATE__, __TIME__);
-    // KdBreakPoint(); Break at the entry point to the driver
 
-    // Since there is only one control-device for all the instances
-    // of the physical device, we need an ability to get to particular instance
-    // of the device in our FilterEvtIoDeviceControlForControl. For that we
-    // will create a collection object and store filter device objects.        
-    // The collection object has the driver object as a default parent.
-    //
+    TraceEvents(TRACE_LEVEL_INFORMATION, DBG_INIT, "vJoy Driver Built %s %s\n", __DATE__, __TIME__);
+    // KdBreakPoint(); Break at the entry point to the driver, use for debug only
 
     // To build a single driver binary that runs both in Windows 8 and in earlier versions of Windows, use the POOL_NX_OPTIN opt-in mechanism. 
     ExInitializeDriverRuntime(DrvRtPoolNxOptIn);
 
-    status = WdfCollectionCreate(WDF_NO_OBJECT_ATTRIBUTES, &vJoyDeviceCollection);
-    if (!NT_SUCCESS(status)) {
-        KdPrint(("WdfCollectionCreate failed with status 0x%x\n", status));
-        LogEventWithStatus(ERRLOG_DRIVER_FAILED, L"WdfCollectionCreate", DriverObject, status);
-        return status;
-    }
 
-
-    //
-    //// Create a framework driver object to represent our driver.
     //
     //   Register AddDevice callback function
     //
+    // Initialize the driver configuration object to register the
+    // entry point for the EvtDeviceAdd callback, vJoyEvtDeviceAdd
     WDF_DRIVER_CONFIG_INIT(&config, vJoyEvtDeviceAdd);
     //
     //   Register a cleanup callback so that we can call WPP_CLEANUP when
@@ -133,16 +122,34 @@ Return Value:
 
     //attributes.ExecutionLevel = WdfExecutionLevelPassive;
 
+    //
+    // Create a framework driver object to represent our driver.
+    //
     status = WdfDriverCreate(DriverObject,
-        RegistryPath,
-        /*&attributes*/ WDF_NO_OBJECT_ATTRIBUTES,
-        &config,
-        &hDriver);
+                             RegistryPath,
+                             /*&attributes*/ WDF_NO_OBJECT_ATTRIBUTES,
+                             &config,
+                             &hDriver);
     if (!NT_SUCCESS(status)) {
-        KdPrint(("WdfDriverCreate failed with status 0x%x\n", status));
+        TraceEvents(TRACE_LEVEL_ERROR, DBG_INIT, "WdfDriverCreate failed with status 0x%x\n", status);
         LogEventWithStatus(ERRLOG_DRIVER_FAILED, L"WdfDriverCreate", DriverObject, status);
+
+        WPP_CLEANUP(DriverObject);
         return status;
     };
+
+    // Since there is only one control-device for all the instances
+    // of the physical device, we need an ability to get to particular instance
+    // of the device in our FilterEvtIoDeviceControlForControl. For that we
+    // will create a collection object and store filter device objects.        
+    // The collection object has the driver object as a default parent.
+    //
+    status = WdfCollectionCreate(WDF_NO_OBJECT_ATTRIBUTES, &vJoyDeviceCollection);
+    if (!NT_SUCCESS(status)) {
+        KdPrint(("WdfCollectionCreate failed with status 0x%x\n", status));
+        LogEventWithStatus(ERRLOG_DRIVER_FAILED, L"WdfCollectionCreate", DriverObject, status);
+        return status;
+    }
 
 
     status = WdfWaitLockCreate(WDF_NO_OBJECT_ATTRIBUTES, &vJoyDeviceCollectionLock);
@@ -586,7 +593,7 @@ vJoyCompleteWriteReport(
     NTSTATUS	status = STATUS_SUCCESS;
     ULONG		bytesToCopy = 0;
     size_t		bytesReturned = 0;
-    UCHAR		ucBuffer[20] = { 0 };
+    UCHAR		ucBuffer[20] ={ 0 };
     WDF_REQUEST_PARAMETERS Parameters;
     PHID_XFER_PACKET transferPacket = NULL;
     UCHAR		EffectBlockIndex = 0;
@@ -672,7 +679,7 @@ vJoyWriteReport(
     WdfRequestCompleteWithInformation(FfbRequest, status, bytesReturned);
 
     return status;
-    }
+}
 
 
 #endif // 0
@@ -713,6 +720,7 @@ Return Value:
     //size_t				NumBytesTransferred;
     //PUCHAR				switchState = NULL;
     //UCHAR				eb;
+    TraceEvents(TRACE_LEVEL_INFORMATION, DBG_IOCTL, "vJoyCompleteReadReport: entering with id=%d\n", id);
 
     pDevContext = GetDeviceContext(Device);
     // Check if the requested report is valid. If not just return
@@ -750,7 +758,7 @@ Return Value:
         status = WdfRequestRetrieveOutputBuffer(request, bytesToCopy, &HidReport, &bytesReturned);
         if (!NT_SUCCESS(status)) {
             TraceEvents(TRACE_LEVEL_ERROR, DBG_IOCTL,
-                "WdfRequestRetrieveOutputBuffer failed with status: 0x%x\n", status);
+                        "WdfRequestRetrieveOutputBuffer failed with status: 0x%x\n", status);
         } else {
             // Copy the data stored in the Device Context into the the output buffer
             if (vJoyGetPositionData(HidReport, pDevContext, id, bytesReturned) != STATUS_SUCCESS)
@@ -882,13 +890,14 @@ Return Value:
 
 --*/
 {
-    /*	_IRQL_requires_max_(1);
-        PAGED_CODE ();
-     */   // UNREFERENCED_PARAMETER(Driver);
+    /*	_IRQL_requires_max_(1); */
+    PAGED_CODE();
+    UNREFERENCED_PARAMETER(Driver);
 
-    WPP_CLEANUP(WdfDriverWdmGetDriverObject(Driver));
     TraceEvents(TRACE_LEVEL_INFORMATION, DBG_INIT, "Exit vJoyEvtDriverContextCleanup\n");
     LogEvent(ERRLOG_DRIVER_REMOVED, NULL, WdfDriverWdmGetDriverObject(Driver));
+
+    WPP_CLEANUP(WdfDriverWdmGetDriverObject(Driver));
 }
 
 
@@ -1214,9 +1223,9 @@ None.
         // is longer than the buffer.
         //
         status = RtlStringCbVPrintfA(debugMessageBuffer,
-            sizeof(debugMessageBuffer),
-            DebugMessage,
-            list);
+                                     sizeof(debugMessageBuffer),
+                                     DebugMessage,
+                                     list);
         if (!NT_SUCCESS(status)) {
 
             DbgPrint(_DRIVER_NAME_": RtlStringCbVPrintfA failed 0x%x\n", status);
@@ -1224,7 +1233,7 @@ None.
         }
         if (TraceEventsLevel <= TRACE_LEVEL_ERROR ||
             (TraceEventsLevel <= DebugLevel &&
-                ((TraceEventsFlag & DebugFlag) == TraceEventsFlag))) {
+             ((TraceEventsFlag & DebugFlag) == TraceEventsFlag))) {
             DbgPrint("%s%s", _DRIVER_NAME_, debugMessageBuffer);
         }
     }
@@ -1236,7 +1245,7 @@ None.
     UNREFERENCED_PARAMETER(TraceEventsFlag);
     UNREFERENCED_PARAMETER(DebugMessage);
 #endif
-    }
+}
 
 #endif
 
