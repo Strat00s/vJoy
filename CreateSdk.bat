@@ -4,7 +4,7 @@ SET X64RELEASE_PATH=X64\Release
 SET X86RELEASE_PATH=Win32\Release
 SET INC_PATH=Inc
 SET ZIP=%ProgramFiles%\7-Zip\7z.exe
-SET ARCHIVE_NAME=SDK.zip
+SET ARCHIVE_NAME=vJoySDK.zip
 
 REM C#
 COPY %X86RELEASE_PATH%\vJoyInterface.dll "%SDK_PATH%\c#\x86\vJoyInterface.dll"

@@ -48,6 +48,12 @@ IF NOT EXIST "%InnoCompiler%" GOTO NOINNO
 set INNO_STATUS=%ERRORLEVEL%
 if not %INNO_STATUS%==0 goto fail
 echo %DATE% %TIME%: Compiling the Inno Setup Script - OK
+XCOPY /Y /I install\vJoySetup.exe .
+
+:SDK
+call CreateSdk.bat
+
+:done
 exit /b 0
 
 :NOUTIL
