@@ -1,8 +1,10 @@
 REM Automate the creation of an SDK package
-set SDK_PATH=SDK
-set X64RELEASE_PATH=X64\Release
-set X86RELEASE_PATH=Win32\Release
-set INC_PATH=Inc
+SET SDK_PATH=SDK
+SET X64RELEASE_PATH=X64\Release
+SET X86RELEASE_PATH=Win32\Release
+SET INC_PATH=Inc
+SET ZIP=%ProgramFiles%\7-Zip\7z.exe
+SET ARCHIVE_NAME=SDK.zip
 
 REM C#
 COPY %X86RELEASE_PATH%\vJoyInterface.dll "%SDK_PATH%\c#\x86\vJoyInterface.dll"
@@ -20,3 +22,16 @@ COPY %X86RELEASE_PATH%\vJoyInterface.dll "%SDK_PATH%\LIB\vJoyInterface.dll"
 COPY %X86RELEASE_PATH%\vJoyInterface.lib "%SDK_PATH%\LIB\vJoyInterface.lib"
 COPY %X64RELEASE_PATH%\vJoyInterface.dll "%SDK_PATH%\LIB\amd64\vJoyInterface.dll"
 COPY %X64RELEASE_PATH%\vJoyInterface.lib "%SDK_PATH%\LIB\amd64\vJoyInterface.lib"
+
+
+:archive
+SET current_path="%CD%"
+DEL /F /Q "%ARCHIVE_NAME%"
+"%ZIP%" a -tzip -r "%ARCHIVE_NAME%" SDK
+CD %current_path%
+set BUILD_STATUS=%ERRORLEVEL%
+if not %BUILD_STATUS%==0 goto fail
+
+:fail
+exit /b 1
+
