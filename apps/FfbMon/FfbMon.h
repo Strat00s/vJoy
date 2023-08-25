@@ -2,7 +2,7 @@
 
 // Prototypes
 void  CALLBACK FfbFunction(PVOID data);
-void  CALLBACK FfbFunction1(PVOID data,PVOID UserData);
+void  CALLBACK FfbFunction1(PVOID data, PVOID UserData);
 
 BOOL PacketType2Str(FFBPType Type, LPTSTR Str);
 BOOL EffectType2Str(FFBEType Ctrl, LPTSTR Str);

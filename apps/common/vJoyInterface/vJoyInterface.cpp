@@ -1779,6 +1779,338 @@ namespace vJoyNS {
 
     }
 
+#pragma region FFB Functions for reading out of inner data packet only
+
+    VJOYINTERFACE_API DWORD __cdecl Ffb_dp_DeviceID(const UCHAR* data, UINT* DeviceID)
+        // If valid device ID was found then returns ERROR_SUCCESS and sets the ID (Range 1-15) in DeviceID.
+        // If Packet is NULL then returns ERROR_INVALID_PARAMETER. DeviceID is undefined.
+        // If Packet is malformed or Device ID is out of range then returns ERROR_INVALID_DATA. DeviceID is undefined.
+    {
+        // Routine validity checks
+        if (!data)
+            return ERROR_INVALID_PARAMETER;
+
+        *DeviceID = (((data[0]) & 0xF0) >> 4);
+        if (*DeviceID<1)
+            return ERROR_INVALID_DATA;
+        else
+            return ERROR_SUCCESS;
+    }
+    VJOYINTERFACE_API DWORD __cdecl Ffb_dp_Type(const UCHAR* data, FFBPType* Type, int cmd)
+        //If valid Type was found then returns ERROR_SUCCESS and sets Type.
+        //If Packet is NULL then returns ERROR_INVALID_PARAMETER. Feature  is undefined.
+        //If Packet is malformed then returns ERROR_INVALID_DATA. Feature is undefined.
+    {
+        // Routine validity checks
+        if (!data)
+            return ERROR_INVALID_PARAMETER;
+
+        // Get the type
+        int tp = (data[0]) & 0x0F;
+
+        // This is a feature then mark it as such
+        if (cmd == IOCTL_HID_SET_FEATURE)
+            tp += 0x10;
+
+        (*Type) = (FFBPType)tp;
+        return ERROR_SUCCESS;
+    }
+
+    VJOYINTERFACE_API DWORD __cdecl Ffb_dp_EffectBlockIndex(const UCHAR* data, UINT* effectId, int cmd)
+        //If valid Packet was found then returns ERROR_SUCCESS and sets Index to the value of Effect Block Index (if applicable). Expected value is '1'.
+        //If Packet is NULL then returns ERROR_INVALID_PARAMETER. Output parameters are undefined.
+        //If Packet is malformed or does not contain an Effect Block Index then returns ERROR_INVALID_DATA. Output parameters are undefined.
+    {
+        // Routine validity checks
+        if (!data)
+            return ERROR_INVALID_PARAMETER;
+
+        // Some types don't carry Effect Block Index
+        FFBPType Type;
+        if (Ffb_dp_Type(data, &Type, cmd) != ERROR_SUCCESS)
+            return ERROR_INVALID_DATA;
+        if (Type == PT_CTRLREP ||
+            Type == PT_SMPLREP ||
+            Type == PT_GAINREP ||
+            Type == PT_POOLREP ||
+            Type == PT_STATEREP)
+            return ERROR_INVALID_DATA;
+
+        if (Type == PT_NEWEFREP) {
+            // Special case for new effect, ID is third byte
+            *effectId = data[2];
+            return ERROR_SUCCESS;
+        }
+        // The Effect Block Index is the second byte (After the Report ID)
+        *effectId = data[1];
+        return ERROR_SUCCESS;
+    }
+    VJOYINTERFACE_API DWORD __cdecl Ffb_dp_EBI(const UCHAR* data, UINT* effectId, int cmd)
+        //If valid Packet was found then returns ERROR_SUCCESS and sets Index to the value of Effect Block Index (if applicable). Expected value is '1'.
+        //If Packet is NULL then returns ERROR_INVALID_PARAMETER. Output parameters are undefined.
+        //If Packet is malformed or does not contain an Effect Block Index then returns ERROR_INVALID_DATA. Output parameters are undefined.
+    {
+        return Ffb_dp_EffectBlockIndex(data, effectId, cmd);
+    }
+
+    VJOYINTERFACE_API DWORD __cdecl Ffb_dp_Eff_Report(const UCHAR* data, FFB_EFF_REPORT* Effect, int cmd)
+        //If valid Packet was found then returns ERROR_SUCCESS and fills structure Effect - this structure holds Effect Block Index and Magnitude.
+        //If Packet is NULL then returns ERROR_INVALID_PARAMETER. Output parameters are undefined.
+        //If Packet is malformed  then returns ERROR_INVALID_DATA. Output parameters are undefined.
+    {
+        // Routine validity checks
+        if (!data)
+            return ERROR_INVALID_PARAMETER;
+
+        // @TODO: NOT NOW
+        //if (Packet->size <(8 + 2 + 16))   // Header = 8+2, packet = 16+(2), (2) is optionnal, depends on direction
+        //	return ERROR_INVALID_DATA;
+
+        // Some types don't carry Effect Block Index
+        FFBPType Type;
+        if (Ffb_dp_Type(data, &Type, cmd) != ERROR_SUCCESS)
+            return ERROR_INVALID_DATA;
+        if (Type != PT_EFFREP)
+            return ERROR_INVALID_DATA;
+
+        Effect->EffectBlockIndex = data[1];
+        Effect->EffectType = (FFBEType)(data[2]);
+        Effect->Duration = (WORD)((data[4] << 8) + (data[3]));
+        Effect->TrigerRpt = (WORD)((data[6] << 8) + (data[5]));
+        Effect->SamplePrd = (WORD)((data[8] << 8) + (data[7]));
+        Effect->StartDelay = (WORD)((data[10] << 8) + (data[9]));
+        Effect->Gain = data[11];
+        Effect->TrigerBtn = data[12];
+        Effect->AxesEnabledDirection = data[13];
+        Effect->Polar = (data[13] == 0x04);
+        if (Effect->Polar)
+            Effect->Direction = (WORD)((data[15] << 8) + (data[14]));
+        else {
+            //if (Packet->size < (8 + 2 + 18)) return ERROR_INVALID_DATA; // the extra (2) is no longer optional
+
+            Effect->DirX = (WORD)((data[15] << 8) + (data[14]));
+            Effect->DirY = (WORD)((data[17] << 8) + (data[16]));
+        }
+        return ERROR_SUCCESS;
+    }
+    VJOYINTERFACE_API DWORD		__cdecl Ffb_dp_Eff_Constant(const UCHAR* data, FFB_EFF_CONSTANT* ConstantEffect, int cmd)
+        //If valid Packet was found then returns ERROR_SUCCESS and fills structure Effect - this structure holds Effect Block Index and Magnitude.
+        //If Packet is NULL then returns ERROR_INVALID_PARAMETER. Output parameters are undefined.
+        //If Packet is malformed  then returns ERROR_INVALID_DATA. Output parameters are undefined.
+    {
+        // Routine validity checks
+        if (!data)
+            return ERROR_INVALID_PARAMETER;
+
+        // Some types don't carry Effect Block Index
+        FFBPType Type;
+        if (Ffb_dp_Type(data, &Type, cmd) != ERROR_SUCCESS)
+            return ERROR_INVALID_DATA;
+        if (Type != PT_CONSTREP)
+            return ERROR_INVALID_DATA;
+
+        ConstantEffect->EffectBlockIndex = data[1];
+        ConstantEffect->Magnitude = (LONG)((data[3] << 8) + (data[2]));
+
+        return ERROR_SUCCESS;
+    }
+
+    VJOYINTERFACE_API DWORD __cdecl Ffb_dp_Eff_Ramp(const UCHAR* data, FFB_EFF_RAMP* RampEffect, int cmd)
+        //If valid Packet was found then returns ERROR_SUCCESS and fills structure Effect - this structure holds Effect Block Index and Magnitude.
+        //If Packet is NULL then returns ERROR_INVALID_PARAMETER. Output parameters are undefined.
+        //If Packet is malformed  then returns ERROR_INVALID_DATA. Output parameters are undefined.
+    {
+        // Routine validity checks
+        if (!data)
+            return ERROR_INVALID_PARAMETER;
+
+        // Some types don't carry Effect Block Index
+        FFBPType Type;
+        if (Ffb_dp_Type(data, &Type, cmd) != ERROR_SUCCESS)
+            return ERROR_INVALID_DATA;
+        if (Type != PT_RAMPREP)
+            return ERROR_INVALID_DATA;
+
+        RampEffect->EffectBlockIndex = data[1];
+        RampEffect->Start = (LONG)(data[3] << 8) + (data[2]);
+        RampEffect->End = (LONG)((data[5] << 8) + (data[4]));
+
+        return ERROR_SUCCESS;
+    }
+
+    VJOYINTERFACE_API DWORD __cdecl Ffb_dp_EffOp(const UCHAR* data, FFB_EFF_OP* Operation, int cmd)
+        //If valid Packet was found then returns ERROR_SUCCESS and fills structure Operation- this structure holds Effect Block Index, Operation(Start, Start Solo, Stop) and Loop Count.
+        //If Packet is NULL then returns ERROR_INVALID_PARAMETER. Output parameters are undefined.
+        //If Packet is malformed  then returns ERROR_INVALID_DATA. Output parameters are undefined.
+    {
+        // Routine validity checks
+        if (!data)
+            return ERROR_INVALID_PARAMETER;
+
+        // Some types don't carry Effect Block Index
+        FFBPType Type;
+        if (Ffb_dp_Type(data, &Type, cmd) != ERROR_SUCCESS)
+            return ERROR_INVALID_DATA;
+        if (Type != PT_EFOPREP)
+            return ERROR_INVALID_DATA;
+
+        Operation->EffectBlockIndex = data[1];
+        Operation->EffectOp = (FFBOP)data[2];
+        Operation->LoopCount = data[3];
+        return ERROR_SUCCESS;
+    }
+
+    VJOYINTERFACE_API DWORD __cdecl Ffb_dp_CreateNewEffect(const UCHAR* data, FFBEType* effectType, UINT* newEffectId, int cmd)
+        //If valid Packet was found then returns ERROR_SUCCESS and sets the new Effect type
+        //If Packet is NULL then returns ERROR_INVALID_PARAMETER. Output parameters are undefined.
+        //If Packet is malformed  then returns ERROR_INVALID_DATA. Output parameters are undefined.
+    {
+        // Routine validity checks
+        if (!data)
+            return ERROR_INVALID_PARAMETER;
+
+        // Some types don't carry Effect Block Index
+        FFBPType Type;
+        if (Ffb_dp_Type(data, &Type, cmd) != ERROR_SUCCESS)
+            return ERROR_INVALID_DATA;
+        if (Type != PT_NEWEFREP)
+            return ERROR_INVALID_DATA;
+
+        if (effectType != nullptr) {
+            *effectType = static_cast <FFBEType>(data[1]);
+        }
+        if (newEffectId != nullptr) {
+            *newEffectId = static_cast <BYTE>(data[2]);
+        }
+        return ERROR_SUCCESS;
+    }
+    VJOYINTERFACE_API DWORD __cdecl Ffb_dp_EffNew(const UCHAR* data, FFBEType* Effect, int cmd)
+        //If valid Packet was found then returns ERROR_SUCCESS and sets the new Effect type
+        //If Packet is NULL then returns ERROR_INVALID_PARAMETER. Output parameters are undefined.
+        //If Packet is malformed  then returns ERROR_INVALID_DATA. Output parameters are undefined.
+    {
+        return Ffb_dp_CreateNewEffect(data, Effect, nullptr, cmd);
+    }
+
+    VJOYINTERFACE_API DWORD __cdecl Ffb_dp_DevCtrl(const UCHAR* data, FFB_CTRL* Control, int cmd)
+        //If valid Packet was found then returns ERROR_SUCCESS and gets enum Control - this enum holds PID Device Control (Enable Actuators, Device Reset etc).
+        //If Packet is NULL then returns ERROR_INVALID_PARAMETER. Output parameters are undefined.
+        //If Packet is malformed  then returns ERROR_INVALID_DATA. Output parameters are undefined.
+    {
+        // Routine validity checks
+        if (!data)
+            return ERROR_INVALID_PARAMETER;
+
+        // Some types don't carry Effect Block Index
+        FFBPType Type;
+        if (Ffb_dp_Type(data, &Type, cmd) != ERROR_SUCCESS)
+            return ERROR_INVALID_DATA;
+        if (Type != PT_CTRLREP)
+            return ERROR_INVALID_DATA;
+
+        *Control = (FFB_CTRL)data[1];
+        return ERROR_SUCCESS;
+    }
+
+    VJOYINTERFACE_API DWORD __cdecl Ffb_dp_DevGain(const UCHAR* data, BYTE* Gain, int cmd)
+        //If valid Packet was found then returns ERROR_SUCCESS and gets the device global gain.
+        //If Packet is NULL then returns ERROR_INVALID_PARAMETER. Output parameters are undefined.
+        //If Packet is malformed  then returns ERROR_INVALID_DATA. Output parameters are undefined.
+    {
+        // Routine validity checks
+        if (!data)
+            return ERROR_INVALID_PARAMETER;
+
+        // Some types don't carry Effect Block Index
+        FFBPType Type;
+        if (Ffb_dp_Type(data, &Type, cmd) != ERROR_SUCCESS)
+            return ERROR_INVALID_DATA;
+        if (Type != PT_GAINREP)
+            return ERROR_INVALID_DATA;
+
+        *Gain = data[1];
+        return ERROR_SUCCESS;
+
+    }
+
+    VJOYINTERFACE_API DWORD __cdecl Ffb_dp_Eff_Period(const UCHAR* data, FFB_EFF_PERIOD* Effect, int cmd)
+        //If valid Packet was found then returns ERROR_SUCCESS and fills structure Effect - this structure holds Effect Block Index, Magnitude, Offset, Phase and period.
+        //If Packet is NULL then returns ERROR_INVALID_PARAMETER. Output parameters are undefined.
+        //If Packet is malformed  then returns ERROR_INVALID_DATA. Output parameters are undefined.
+    {
+        // Routine validity checks
+        if (!data)
+            return ERROR_INVALID_PARAMETER;
+
+        // Some types don't carry Effect Block Index
+        FFBPType Type;
+        if (Ffb_dp_Type(data, &Type, cmd) != ERROR_SUCCESS)
+            return ERROR_INVALID_DATA;
+        if (Type != PT_PRIDREP)
+            return ERROR_INVALID_DATA;
+
+        Effect->EffectBlockIndex = data[1];
+        Effect->Magnitude = (DWORD)((data[3] << 8) + (data[2]));
+        Effect->Offset = (LONG)((data[5] << 8) + (data[4]));
+        Effect->Phase = (DWORD)((data[7] << 8) + (data[6]));
+        Effect->Period = (DWORD)((data[11] << 24) + (data[10] << 16) + (data[9] << 8) + (data[8]));
+        return ERROR_SUCCESS;
+    }
+
+    VJOYINTERFACE_API DWORD __cdecl Ffb_dp_Eff_Cond(const UCHAR* data, FFB_EFF_COND* Condition, int cmd)
+        //If valid Packet was found then returns ERROR_SUCCESS and fills structure Condition - this structure holds Effect Block Index, Direction (X/Y), Center Point Offset, Dead Band and other conditions.
+        //If Packet is NULL then returns ERROR_INVALID_PARAMETER. Output parameters are undefined.
+        //If Packet is malformed  then returns ERROR_INVALID_DATA. Output parameters are undefined.
+    {
+        // Routine validity checks
+        if (!data)
+            return ERROR_INVALID_PARAMETER;
+
+        // Some types don't carry Effect Block Index
+        FFBPType Type;
+        if (Ffb_dp_Type(data, &Type, cmd) != ERROR_SUCCESS)
+            return ERROR_INVALID_DATA;
+        if (Type != PT_CONDREP)
+            return ERROR_INVALID_DATA;
+
+        Condition->EffectBlockIndex = data[1];
+        Condition->isY = data[2];
+        Condition->CenterPointOffset = (LONG)((data[4] << 8) + (data[3]));
+        Condition->PosCoeff = (LONG)((data[6] << 8) + (data[5]));
+        Condition->NegCoeff = (LONG)((data[8] << 8) + (data[7]));
+        Condition->PosSatur = (DWORD)((data[10] << 8) + (data[9]));
+        Condition->NegSatur = (DWORD)((data[12] << 8) + (data[11]));
+        Condition->DeadBand = (LONG)((data[14] << 8) + (data[13]));
+        return ERROR_SUCCESS;
+    }
+
+    VJOYINTERFACE_API DWORD __cdecl Ffb_dp_Eff_Envlp(const UCHAR* data, FFB_EFF_ENVLP* Envelope, int cmd)
+        //If valid Packet was found then returns ERROR_SUCCESS and fills structure Envelope -
+        //If Packet is NULL then returns ERROR_INVALID_PARAMETER. Output parameters are undefined.
+        //If Packet is malformed  then returns ERROR_INVALID_DATA. Output parameters are undefined.
+    {
+        // Routine validity checks
+        if (!data)
+            return ERROR_INVALID_PARAMETER;
+
+        // Some types don't carry Effect Block Index
+        FFBPType Type;
+        if (Ffb_dp_Type(data, &Type, cmd) != ERROR_SUCCESS)
+            return ERROR_INVALID_DATA;
+        if (Type != PT_ENVREP)
+            return ERROR_INVALID_DATA;
+
+        Envelope->EffectBlockIndex = data[1];
+        Envelope->AttackLevel = (DWORD)((data[3] << 8) + (data[2]));
+        Envelope->FadeLevel = (DWORD)((data[5] << 8) + (data[4]));
+        Envelope->AttackTime = (DWORD)((data[9] << 24) + (data[8] << 16) + (data[7] << 8) + (data[6]));
+        Envelope->FadeTime = (DWORD)((data[13] << 24) + (data[12] << 16) + (data[11] << 8) + (data[10]));
+        return ERROR_SUCCESS;
+    }
+
+
+#pragma endregion
+
 #pragma region FFB Functions
 
 
@@ -1892,7 +2224,7 @@ namespace vJoyNS {
             return ERROR_INVALID_PARAMETER;
         if (Packet->size <(8+2+16))   // Header = 8+2, packet = 16+(2), (2) is optionnal, depends on direction
             return ERROR_INVALID_DATA;
-        
+
         // Some types don't carry Effect Block Index
         FFBPType Type;
         if (Ffb_h_Type(Packet, &Type) != ERROR_SUCCESS)
@@ -2067,7 +2399,7 @@ namespace vJoyNS {
         if (Type != PT_GAINREP)
             return ERROR_INVALID_DATA;
 
-        *Gain = (FFB_CTRL)Packet->data[1];
+        *Gain = Packet->data[1];
         return ERROR_SUCCESS;
 
     }
@@ -2259,7 +2591,7 @@ namespace vJoyNS {
     }
 
     VJOYINTERFACE_API DWORD __cdecl FfbUpdateEffectState(UINT rID, UINT effectId, UINT effectState)
-    // Update the Ffb state report (bitfield) of the specified effect in given vJoy Device.
+        // Update the Ffb state report (bitfield) of the specified effect in given vJoy Device.
     {
         FFB_DEVICE_PID PIDBlockLoad;
         if (effectId<VJOY_FFB_FIRST_EFFECT_ID || effectId>VJOY_FFB_MAX_EFFECTS_BLOCK_INDEX)
@@ -2269,7 +2601,7 @@ namespace vJoyNS {
         if (stt != ERROR_SUCCESS) return stt;
 
         PIDBlockLoad.EffectStates[effectId-1].PIDEffectStateReport = (BYTE)effectState;
-        
+
         stt = FfbWritePID(rID, &PIDBlockLoad);
         if (stt != ERROR_SUCCESS) return stt;
 
@@ -2330,10 +2662,10 @@ HANDLE	GetHandleByIndex(int index)
     //
     // Open a handle to the plug and play dev node.
     HDEVINFO hardwareDeviceInfo = SetupDiGetClassDevs(&HidGuid,
-        NULL, // Define no enumerator (global)
-        NULL, // Define no
-        (DIGCF_PRESENT | // Only Devices present
-            DIGCF_DEVICEINTERFACE)); // Function class devices.
+                                                      NULL, // Define no enumerator (global)
+                                                      NULL, // Define no
+                                                      (DIGCF_PRESENT | // Only Devices present
+                                                       DIGCF_DEVICEINTERFACE)); // Function class devices.
 
     if (INVALID_HANDLE_VALUE == hardwareDeviceInfo) {
         if (LogStream)
@@ -2349,10 +2681,10 @@ HANDLE	GetHandleByIndex(int index)
 
     // Get Interface data for Device[index]
     isOK = SetupDiEnumDeviceInterfaces(hardwareDeviceInfo,
-        0, // No care about specific PDOs
-        &HidGuid,
-        index, // Running index
-        &deviceInfoData);
+                                       0, // No care about specific PDOs
+                                       &HidGuid,
+                                       index, // Running index
+                                       &deviceInfoData);
 
     // Return NULL if there are no more device interfaces
     // Return INVALID_HANDLE_VALUE for all other failures
@@ -2421,12 +2753,12 @@ HANDLE	GetHandleByIndex(int index)
 
     // Get a handle to the device
     HANDLE HidDevice = CreateFile(functionClassDeviceData->DevicePath,
-        NULL,
-        FILE_SHARE_READ | FILE_SHARE_WRITE,
-        NULL,        // no SECURITY_ATTRIBUTES structure
-        OPEN_EXISTING, // No special create flags
-        0,   // Open device as non-overlapped so we can get data
-        NULL);       // No template file
+                                  NULL,
+                                  FILE_SHARE_READ | FILE_SHARE_WRITE,
+                                  NULL,        // no SECURITY_ATTRIBUTES structure
+                                  OPEN_EXISTING, // No special create flags
+                                  0,   // Open device as non-overlapped so we can get data
+                                  NULL);       // No template file
     if (INVALID_HANDLE_VALUE == HidDevice) {
         if (LogStream)
             _ftprintf_s(LogStream, _T("\n[%05u]Error: GetHandleByIndex(index=%d) - Failed to CreateFile(%s)"), ProcessId, index, functionClassDeviceData->DevicePath);
@@ -2786,7 +3118,7 @@ BOOL	GetDeviceNameSpace(char** NameSpace, int* Size, BOOL Refresh, DWORD* error)
         NULL, // Define no enumerator (global)
         NULL, // Define no
         (DIGCF_PRESENT | // Only Devices present
-            DIGCF_DEVICEINTERFACE)); // Function class devices.
+         DIGCF_DEVICEINTERFACE)); // Function class devices.
     if (INVALID_HANDLE_VALUE == hardwareDeviceInfo) {
         if (error)
             *error = GetLastError();
@@ -2797,10 +3129,10 @@ BOOL	GetDeviceNameSpace(char** NameSpace, int* Size, BOOL Refresh, DWORD* error)
 
     // Enumerate devices of HID class
     if (SetupDiEnumDeviceInterfaces(hardwareDeviceInfo,
-        NULL, // No care about specific PDOs
-        (LPGUID)&GUID_DEVINTERFACE_VJOY,
-        i, //
-        &deviceInterfaceData)) {
+                                    NULL, // No care about specific PDOs
+                                    (LPGUID)&GUID_DEVINTERFACE_VJOY,
+                                    i, //
+                                    &deviceInterfaceData)) {
 
         if (deviceInterfaceDetailData)
             deviceInterfaceDetailData = NULL;
@@ -2935,12 +3267,12 @@ HANDLE	OpenDeviceInterface(UINT iInterFace, DWORD* error)
 
     ///// Open vJoy Raw device
     HANDLE file = CreateFile(DevPath,
-        GENERIC_READ | GENERIC_WRITE,
-        FILE_SHARE_READ | FILE_SHARE_WRITE,
-        NULL, // no SECURITY_ATTRIBUTES structure
-        OPEN_EXISTING, // No special create flags
-        FILE_FLAG_OVERLAPPED, // Overlapped read/write
-        NULL);
+                             GENERIC_READ | GENERIC_WRITE,
+                             FILE_SHARE_READ | FILE_SHARE_WRITE,
+                             NULL, // no SECURITY_ATTRIBUTES structure
+                             OPEN_EXISTING, // No special create flags
+                             FILE_FLAG_OVERLAPPED, // Overlapped read/write
+                             NULL);
 
     if (INVALID_HANDLE_VALUE == file) {
         CloseHandle(file);
@@ -4108,7 +4440,7 @@ INT		GetControls(UINT rID)
     vJoyDeviceEntry(rID);
 
     // Clean  DeviceControls structure
-    vJoyDevices[rID].DeviceControls = { 
+    vJoyDevices[rID].DeviceControls = {
         FALSE,
         FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE,
         FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE,
@@ -4347,7 +4679,7 @@ BOOL vJoyDeviceEntry(int rID)
     if (vJoyDevices.find(rID) != vJoyDevices.end())
         return FALSE;
 
-    auto out = vJoyDevices.emplace(rID, DeviceStat{ INVALID_HANDLE_VALUE, VJD_STAT_UNKN, { 0 }, NULL, { FALSE }, NULL });
+    auto out = vJoyDevices.emplace(rID, DeviceStat { INVALID_HANDLE_VALUE, VJD_STAT_UNKN, { 0 }, NULL, { FALSE }, NULL });
     if (!out.second)
         return FALSE;
 
@@ -4587,10 +4919,10 @@ BOOL FfbGetEffectState(void)
         (FfbDataPacket.data[0] == 0xA)&&		// Report ID is 0xA
         (FfbDataPacket.data[1] == 1)&& 		// Block index is 1
         (
-        (FfbDataPacket.data[2] == 1)|| 	// Start
+            (FfbDataPacket.data[2] == 1)|| 	// Start
             (FfbDataPacket.data[2] == 2) 		// or Start Solo
             )&&
-            (FfbDataPacket.data[3] > 0)			// Loop at least once
+        (FfbDataPacket.data[3] > 0)			// Loop at least once
         )
         FfbEffectState = TRUE;
 
@@ -4797,10 +5129,10 @@ BOOL FfbGetEffectState(void)
         (FfbDataPacket.data[0] == 0xA) &&		// Report ID is 0xA
         (FfbDataPacket.data[1] == 1) && 		// Block index is 1
         (
-        (FfbDataPacket.data[2] == 1) || 	// Start
+            (FfbDataPacket.data[2] == 1) || 	// Start
             (FfbDataPacket.data[2] == 2) 		// or Start Solo
             ) &&
-            (FfbDataPacket.data[3] > 0)			// Loop at least once
+        (FfbDataPacket.data[3] > 0)			// Loop at least once
         )
         FfbEffectState = TRUE;
 

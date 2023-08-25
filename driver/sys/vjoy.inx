@@ -15,6 +15,7 @@ Provider=%VENDOR%
 ;LayoutFile=layout.inf
 DriverVer=01/10/2007,1.0.0.0
 CatalogFile = vJoy.cat
+PnpLockdown = 1
 
 
 ;   

@@ -163,15 +163,13 @@ enum FFBPType : UINT32 // FFB Packet Type
     PT_STATEREP = HID_ID_STATEREP+0x10,	// Usage PID State Report
 };
 
-enum FFBOP : UINT32
-{
+enum FFBOP : UINT32 {
     EFF_START = 1, // EFFECT START
     EFF_SOLO = 2, // EFFECT SOLO START
     EFF_STOP = 3, // EFFECT STOP
 };
 
-enum FFB_CTRL : UINT32
-{
+enum FFB_CTRL : UINT32 {
     CTRL_ENACT = 1,	// Enable all device actuators.
     CTRL_DISACT = 2,	// Disable all the device actuators.
     CTRL_STOPALL = 3,	// Stop All Effects­ Issues a stop on every running effect.
@@ -180,8 +178,7 @@ enum FFB_CTRL : UINT32
     CTRL_DEVCONT = 6,	// Device Continue– The all effects that running when the device was paused are restarted from their last time step.
 };
 
-enum FFB_EFFECTS : UINT32
-{
+enum FFB_EFFECTS : UINT32 {
     Constant = 0x0001,
     Ramp = 0x0002,
     Square = 0x0004,
@@ -229,8 +226,7 @@ typedef struct _FFB_EFF_REPORT {
     BYTE		AxesEnabledDirection;
 
     BOOL		Polar; // How to interpret force direction Polar (0-360°) or Cartesian (X,Y)
-    union
-    {
+    union {
         WORD	Direction; // Polar direction: (0x00-0x7FFF correspond to 0-360°)
         WORD	DirX; // X direction: Positive values are To the right of the center (X); Negative are Two's complement
     };
@@ -369,6 +365,30 @@ namespace vJoyNS {
         // Added in 2.1.6
     VJOYINTERFACE_API BOOL		__cdecl	IsDeviceFfb(UINT rID);
     VJOYINTERFACE_API BOOL		__cdecl	IsDeviceFfbEffect(UINT rID, UINT Effect);
+
+#pragma region FFB Work with inner data packet only
+    // New API added with 2.2.1 by https://github.com/cyberluke/vJoy
+    // Force Feedback (FFB) helper functions 2 (working with inner packet data only for faster C# throughput)
+    VJOYINTERFACE_API DWORD 	__cdecl	Ffb_dp_DeviceID(const UCHAR* data, UINT* DeviceID);
+    VJOYINTERFACE_API DWORD 	__cdecl Ffb_dp_Type(const UCHAR* data, FFBPType* Type, int cmd);
+    __declspec(deprecated("** Ffb_h_EBI function was deprecated - Use Ffb_h_EffectBlockIndex **")) \
+        VJOYINTERFACE_API DWORD 	__cdecl Ffb_dp_EBI(const UCHAR* data, UINT* Index, int cmd);
+    VJOYINTERFACE_API DWORD 	__cdecl Ffb_dp_Eff_Report(const UCHAR* data, FFB_EFF_REPORT* Effect, int cmd);
+    VJOYINTERFACE_API DWORD		__cdecl Ffb_dp_Eff_Ramp(const UCHAR* data, FFB_EFF_RAMP* RampEffect, int cmd);
+    VJOYINTERFACE_API DWORD 	__cdecl Ffb_dp_EffOp(const UCHAR* data, FFB_EFF_OP* Operation, int cmd);
+    VJOYINTERFACE_API DWORD 	__cdecl Ffb_dp_DevCtrl(const UCHAR* data, FFB_CTRL* Control, int cmd);
+    VJOYINTERFACE_API DWORD 	__cdecl Ffb_dp_Eff_Period(const UCHAR* data, FFB_EFF_PERIOD* Effect, int cmd);
+    VJOYINTERFACE_API DWORD 	__cdecl Ffb_dp_Eff_Cond(const UCHAR* data, FFB_EFF_COND* Condition, int cmd);
+    VJOYINTERFACE_API DWORD 	__cdecl Ffb_dp_DevGain(const UCHAR* data, BYTE* Gain, int cmd);
+    VJOYINTERFACE_API DWORD		__cdecl Ffb_dp_Eff_Envlp(const UCHAR* data, FFB_EFF_ENVLP* Envelope, int cmd);
+    __declspec(deprecated("** Ffb_h_Eff_Const function was deprecated - Use function Ffb_h_CreateNewEffect **")) \
+        VJOYINTERFACE_API DWORD		__cdecl Ffb_dp_EffNew(const UCHAR* data, FFBEType* Effect, int cmd);
+    VJOYINTERFACE_API DWORD		__cdecl Ffb_dp_Eff_Constant(const UCHAR* data, FFB_EFF_CONSTANT* ConstantEffect, int cmd);
+    // Retrieve Effect Block Index from packet
+    VJOYINTERFACE_API DWORD 	__cdecl Ffb_dp_EffectBlockIndex(const UCHAR* data, UINT* effectId, int cmd);
+    // Create new effect base on given type and new effect block id
+    VJOYINTERFACE_API DWORD		__cdecl Ffb_dp_CreateNewEffect(const UCHAR* data, FFBEType* effectType, UINT* newEffectId, int cmd);
+#pragma endregion
 
     //  Force Feedback (FFB) helper functions
     VJOYINTERFACE_API DWORD 	__cdecl	Ffb_h_DeviceID(const FFB_DATA* Packet, UINT* DeviceID);

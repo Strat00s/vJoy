@@ -62,21 +62,21 @@ _tmain(int argc, _TCHAR* argv[])
     VjdStat status = GetVJDStatus(DevID);
 
     switch (status) {
-    case VJD_STAT_OWN:
-        _tprintf(L"vJoy device %d is  owned by this feeder\n", DevID);
-        break;
-    case VJD_STAT_FREE:
-        _tprintf(L"vJoy device %d is free\n", DevID);
-        break;
-    case VJD_STAT_BUSY:
-        _tprintf(L"vJoy device %d is already owned by another feeder\nCannot continue\n", DevID);
-        return -3;
-    case VJD_STAT_MISS:
-        _tprintf(L"vJoy device %d is not installed or disabled\nCannot continue\n", DevID);
-        return -4;
-    default:
-        _tprintf(L"vJoy device %d general error\nCannot continue\n", DevID);
-        return -1;
+        case VJD_STAT_OWN:
+            _tprintf(L"vJoy device %d is  owned by this feeder\n", DevID);
+            break;
+        case VJD_STAT_FREE:
+            _tprintf(L"vJoy device %d is free\n", DevID);
+            break;
+        case VJD_STAT_BUSY:
+            _tprintf(L"vJoy device %d is already owned by another feeder\nCannot continue\n", DevID);
+            return -3;
+        case VJD_STAT_MISS:
+            _tprintf(L"vJoy device %d is not installed or disabled\nCannot continue\n", DevID);
+            return -4;
+        default:
+            _tprintf(L"vJoy device %d general error\nCannot continue\n", DevID);
+            return -1;
     };
 
 
@@ -327,61 +327,61 @@ BOOL PacketType2Str(FFBPType Type, LPTSTR OutStr)
     LPTSTR Str = L"";
 
     switch (Type) {
-    case PT_EFFREP:
-        Str = L"Effect Report";
-        break;
-    case PT_ENVREP:
-        Str = L"Envelope Report";
-        break;
-    case PT_CONDREP:
-        Str = L"Condition Report";
-        break;
-    case PT_PRIDREP:
-        Str = L"Periodic Report";
-        break;
-    case PT_CONSTREP:
-        Str = L"Constant Force Report";
-        break;
-    case PT_RAMPREP:
-        Str = L"Ramp Force Report";
-        break;
-    case PT_CSTMREP:
-        Str = L"Custom Force Data Report";
-        break;
-    case PT_SMPLREP:
-        Str = L"Download Force Sample";
-        break;
-    case PT_EFOPREP:
-        Str = L"Effect Operation Report";
-        break;
-    case PT_BLKFRREP:
-        Str = L"PID Block Free Report";
-        break;
-    case PT_CTRLREP:
-        Str = L"PID Device Control";
-        break;
-    case PT_GAINREP:
-        Str = L"Device Gain Report";
-        break;
-    case PT_SETCREP:
-        Str = L"Set Custom Force Report";
-        break;
-    case PT_NEWEFREP:
-        Str = L"Create New Effect Report";
-        break;
-    case PT_BLKLDREP:
-        Str = L"Block Load Report";
-        break;
-    case PT_POOLREP:
-        Str = L"PID Pool Report";
-        break;
-    case PT_STATEREP:
-        Str = L"PID State Report";
-        break;
+        case PT_EFFREP:
+            Str = L"Effect Report";
+            break;
+        case PT_ENVREP:
+            Str = L"Envelope Report";
+            break;
+        case PT_CONDREP:
+            Str = L"Condition Report";
+            break;
+        case PT_PRIDREP:
+            Str = L"Periodic Report";
+            break;
+        case PT_CONSTREP:
+            Str = L"Constant Force Report";
+            break;
+        case PT_RAMPREP:
+            Str = L"Ramp Force Report";
+            break;
+        case PT_CSTMREP:
+            Str = L"Custom Force Data Report";
+            break;
+        case PT_SMPLREP:
+            Str = L"Download Force Sample";
+            break;
+        case PT_EFOPREP:
+            Str = L"Effect Operation Report";
+            break;
+        case PT_BLKFRREP:
+            Str = L"PID Block Free Report";
+            break;
+        case PT_CTRLREP:
+            Str = L"PID Device Control";
+            break;
+        case PT_GAINREP:
+            Str = L"Device Gain Report";
+            break;
+        case PT_SETCREP:
+            Str = L"Set Custom Force Report";
+            break;
+        case PT_NEWEFREP:
+            Str = L"Create New Effect Report";
+            break;
+        case PT_BLKLDREP:
+            Str = L"Block Load Report";
+            break;
+        case PT_POOLREP:
+            Str = L"PID Pool Report";
+            break;
+        case PT_STATEREP:
+            Str = L"PID State Report";
+            break;
 
-    default:
-        stat = FALSE;
-        break;
+        default:
+            stat = FALSE;
+            break;
     }
 
     if (stat)
@@ -397,48 +397,48 @@ BOOL EffectType2Str(FFBEType Type, LPTSTR OutStr)
     LPTSTR Str = L"";
 
     switch (Type) {
-    case ET_NONE:
-        stat = FALSE;
-        break;
-    case ET_CONST:
-        Str = L"Constant Force";
-        break;
-    case ET_RAMP:
-        Str = L"Ramp";
-        break;
-    case ET_SQR:
-        Str = L"Square";
-        break;
-    case ET_SINE:
-        Str = L"Sine";
-        break;
-    case ET_TRNGL:
-        Str = L"Triangle";
-        break;
-    case ET_STUP:
-        Str = L"Sawtooth Up";
-        break;
-    case ET_STDN:
-        Str = L"Sawtooth Down";
-        break;
-    case ET_SPRNG:
-        Str = L"Spring";
-        break;
-    case ET_DMPR:
-        Str = L"Damper";
-        break;
-    case ET_INRT:
-        Str = L"Inertia";
-        break;
-    case ET_FRCTN:
-        Str = L"Friction";
-        break;
-    case ET_CSTM:
-        Str = L"Custom Force";
-        break;
-    default:
-        stat = FALSE;
-        break;
+        case ET_NONE:
+            stat = FALSE;
+            break;
+        case ET_CONST:
+            Str = L"Constant Force";
+            break;
+        case ET_RAMP:
+            Str = L"Ramp";
+            break;
+        case ET_SQR:
+            Str = L"Square";
+            break;
+        case ET_SINE:
+            Str = L"Sine";
+            break;
+        case ET_TRNGL:
+            Str = L"Triangle";
+            break;
+        case ET_STUP:
+            Str = L"Sawtooth Up";
+            break;
+        case ET_STDN:
+            Str = L"Sawtooth Down";
+            break;
+        case ET_SPRNG:
+            Str = L"Spring";
+            break;
+        case ET_DMPR:
+            Str = L"Damper";
+            break;
+        case ET_INRT:
+            Str = L"Inertia";
+            break;
+        case ET_FRCTN:
+            Str = L"Friction";
+            break;
+        case ET_CSTM:
+            Str = L"Custom Force";
+            break;
+        default:
+            stat = FALSE;
+            break;
     };
 
     if (stat)
@@ -454,27 +454,27 @@ BOOL DevCtrl2Str(FFB_CTRL Ctrl, LPTSTR OutStr)
     LPTSTR Str = L"";
 
     switch (Ctrl) {
-    case CTRL_ENACT:
-        Str = L"Enable Actuators";
-        break;
-    case CTRL_DISACT:
-        Str = L"Disable Actuators";
-        break;
-    case CTRL_STOPALL:
-        Str = L"Stop All Effects";
-        break;
-    case CTRL_DEVRST:
-        Str = L"Device Reset";
-        break;
-    case CTRL_DEVPAUSE:
-        Str = L"Device Pause";
-        break;
-    case CTRL_DEVCONT:
-        Str = L"Device Continue";
-        break;
-    default:
-        stat = FALSE;
-        break;
+        case CTRL_ENACT:
+            Str = L"Enable Actuators";
+            break;
+        case CTRL_DISACT:
+            Str = L"Disable Actuators";
+            break;
+        case CTRL_STOPALL:
+            Str = L"Stop All Effects";
+            break;
+        case CTRL_DEVRST:
+            Str = L"Device Reset";
+            break;
+        case CTRL_DEVPAUSE:
+            Str = L"Device Pause";
+            break;
+        case CTRL_DEVCONT:
+            Str = L"Device Continue";
+            break;
+        default:
+            stat = FALSE;
+            break;
     }
     if (stat)
         _tcscpy_s(OutStr, 100, Str);
@@ -489,18 +489,18 @@ BOOL EffectOpStr(FFBOP Op, LPTSTR OutStr)
     LPTSTR Str = L"";
 
     switch (Op) {
-    case EFF_START:
-        Str = L"Effect Start";
-        break;
-    case EFF_SOLO:
-        Str = L"Effect Solo Start";
-        break;
-    case EFF_STOP:
-        Str = L"Effect Stop";
-        break;
-    default:
-        stat = FALSE;
-        break;
+        case EFF_START:
+            Str = L"Effect Start";
+            break;
+        case EFF_SOLO:
+            Str = L"Effect Solo Start";
+            break;
+        case EFF_STOP:
+            Str = L"Effect Stop";
+            break;
+        default:
+            stat = FALSE;
+            break;
     }
 
     if (stat)
