@@ -720,7 +720,8 @@ Return Value:
     //size_t				NumBytesTransferred;
     //PUCHAR				switchState = NULL;
     //UCHAR				eb;
-    TraceEvents(TRACE_LEVEL_INFORMATION, DBG_IOCTL, "vJoyCompleteReadReport: entering with id=%d\n", id);
+    
+    //TraceEvents(TRACE_LEVEL_INFORMATION, DBG_IOCTL, "vJoyCompleteReadReport: entering with id=%d\n", id);
 
     pDevContext = GetDeviceContext(Device);
     // Check if the requested report is valid. If not just return
@@ -774,7 +775,7 @@ Return Value:
             TraceEvents(TRACE_LEVEL_ERROR, DBG_IOCTL, "WdfIoQueueRetrieveNextRequest status %08x\n", status);
     }
 
-    TraceEvents(TRACE_LEVEL_INFORMATION, DBG_IOCTL, "vJoyCompleteReadReport: exiting with stt=0x%x\n", status);
+    //TraceEvents(TRACE_LEVEL_INFORMATION, DBG_IOCTL, "vJoyCompleteReadReport: exiting with stt=0x%x\n", status);
 
     return status;
 }
@@ -823,28 +824,29 @@ vJoyGetPositionData(
 
     if (STATUS_SUCCESS == WdfWaitLockAcquire(pDevContext->positionLock, &timeout)) {
         HidReport->InputReport.CollectionId = id;
-        HidReport->InputReport.bAxisX = pDevContext->positions[i]->ValX;
-        HidReport->InputReport.bAxisY = pDevContext->positions[i]->ValY;
-        HidReport->InputReport.bAxisZ = pDevContext->positions[i]->ValZ;
-        HidReport->InputReport.bAxisRX = pDevContext->positions[i]->ValRX;
-        HidReport->InputReport.bAxisRY = pDevContext->positions[i]->ValRY;
-        HidReport->InputReport.bAxisRZ = pDevContext->positions[i]->ValRZ;
-        HidReport->InputReport.bSlider = pDevContext->positions[i]->ValSlider;
-        HidReport->InputReport.bDial = pDevContext->positions[i]->ValDial;
+        HidReport->InputReport.bAxisX  = (USHORT)pDevContext->positions[i]->ValX;
+        HidReport->InputReport.bAxisY  = (USHORT)pDevContext->positions[i]->ValY;
+        HidReport->InputReport.bAxisZ  = (USHORT)pDevContext->positions[i]->ValZ;
+        HidReport->InputReport.bAxisRX = (USHORT)pDevContext->positions[i]->ValRX;
+        HidReport->InputReport.bAxisRY = (USHORT)pDevContext->positions[i]->ValRY;
+        HidReport->InputReport.bAxisRZ = (USHORT)pDevContext->positions[i]->ValRZ;
+        HidReport->InputReport.bSlider = (USHORT)pDevContext->positions[i]->ValSlider;
+        HidReport->InputReport.bDial   = (USHORT)pDevContext->positions[i]->ValDial;
 
-        HidReport->InputReport.bWheel = pDevContext->positions[i]->ValWheel;
-        HidReport->InputReport.bAccelerator = pDevContext->positions[i]->ValAccelerator;
-        HidReport->InputReport.bBrake = pDevContext->positions[i]->ValBrake;
-        HidReport->InputReport.bClutch = pDevContext->positions[i]->ValClutch;
-        HidReport->InputReport.bSteering = pDevContext->positions[i]->ValSteering;
-        HidReport->InputReport.bAileron = pDevContext->positions[i]->ValAileron;
-        HidReport->InputReport.bRudder = pDevContext->positions[i]->ValRudder;
-        HidReport->InputReport.bThrottle = pDevContext->positions[i]->ValThrottle;
+        HidReport->InputReport.bWheel       = (USHORT)pDevContext->positions[i]->ValWheel;
+        HidReport->InputReport.bAccelerator = (USHORT)pDevContext->positions[i]->ValAccelerator;
+        HidReport->InputReport.bBrake       = (USHORT)pDevContext->positions[i]->ValBrake;
+        HidReport->InputReport.bClutch      = (USHORT)pDevContext->positions[i]->ValClutch;
+        HidReport->InputReport.bSteering    = (USHORT)pDevContext->positions[i]->ValSteering;
+        HidReport->InputReport.bAileron     = (USHORT)pDevContext->positions[i]->ValAileron;
+        HidReport->InputReport.bRudder      = (USHORT)pDevContext->positions[i]->ValRudder;
+        HidReport->InputReport.bThrottle    = (USHORT)pDevContext->positions[i]->ValThrottle;
 
-        HidReport->InputReport.bHats = pDevContext->positions[i]->ValHats;
-        HidReport->InputReport.bHatsEx1 = pDevContext->positions[i]->ValHatsEx1;
-        HidReport->InputReport.bHatsEx2 = pDevContext->positions[i]->ValHatsEx2;
-        HidReport->InputReport.bHatsEx3 = pDevContext->positions[i]->ValHatsEx3;
+        HidReport->InputReport.bHats    = (USHORT)pDevContext->positions[i]->ValHats;
+        HidReport->InputReport.bHatsEx1 = (USHORT)pDevContext->positions[i]->ValHatsEx1;
+        HidReport->InputReport.bHatsEx2 = (USHORT)pDevContext->positions[i]->ValHatsEx2;
+        HidReport->InputReport.bHatsEx3 = (USHORT)pDevContext->positions[i]->ValHatsEx3;
+
         HidReport->InputReport.bButtons = (ULONG)pDevContext->positions[i]->ValButtons;
 
         // Support 128 buttons

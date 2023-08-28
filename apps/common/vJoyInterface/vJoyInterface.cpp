@@ -1305,22 +1305,22 @@ namespace vJoyNS {
         if (data_buf.InitValPov[0] == 0xFF)
             vJoyDevices[rID].position.bHats = (DWORD)-1;
         else
-            vJoyDevices[rID].position.bHats = data_buf.InitValPov[0] * 0x8C9F / 100 + 1;
+            vJoyDevices[rID].position.bHats = data_buf.InitValPov[0] * 3599 / 100 + 1;
 
         if (data_buf.InitValPov[1] == 0xFF)
             vJoyDevices[rID].position.bHatsEx1 = (DWORD)-1;
         else
-            vJoyDevices[rID].position.bHatsEx1 = data_buf.InitValPov[1] * 0x8C9F / 100 + 1;
+            vJoyDevices[rID].position.bHatsEx1 = data_buf.InitValPov[1] * 3599 / 100 + 1;
 
         if (data_buf.InitValPov[2] == 0xFF)
             vJoyDevices[rID].position.bHatsEx2 = (DWORD)-1;
         else
-            vJoyDevices[rID].position.bHatsEx2 = data_buf.InitValPov[2] * 0x8C9F / 100 + 1;
+            vJoyDevices[rID].position.bHatsEx2 = data_buf.InitValPov[2] * 3599 / 100 + 1;
 
         if (data_buf.InitValPov[3] == 0xFF)
             vJoyDevices[rID].position.bHatsEx3 = (DWORD)-1;
         else
-            vJoyDevices[rID].position.bHatsEx3 = data_buf.InitValPov[3] * 0x8C9F / 100 + 1;
+            vJoyDevices[rID].position.bHatsEx3 = data_buf.InitValPov[3] * 3599 / 100 + 1;
 
 
         UpdateVJD(rID, &(vJoyDevices[rID].position));
@@ -3962,22 +3962,22 @@ BOOL	InitPosition(int Index)
     if (data_buf.InitValPov[0] == 0xFF)
         vJoyDevices[Index].position.bHats = (DWORD)-1;
     else
-        vJoyDevices[Index].position.bHats = data_buf.InitValPov[0] * 0x8C9F / 100 + 1;
+        vJoyDevices[Index].position.bHats = data_buf.InitValPov[0] * 3599 / 100 + 1;
 
     if (data_buf.InitValPov[1] == 0xFF)
         vJoyDevices[Index].position.bHatsEx1 = (DWORD)-1;
     else
-        vJoyDevices[Index].position.bHatsEx1 = data_buf.InitValPov[1] * 0x8C9F / 100 + 1;
+        vJoyDevices[Index].position.bHatsEx1 = data_buf.InitValPov[1] * 3599 / 100 + 1;
 
     if (data_buf.InitValPov[2] == 0xFF)
         vJoyDevices[Index].position.bHatsEx2 = (DWORD)-1;
     else
-        vJoyDevices[Index].position.bHatsEx2 = data_buf.InitValPov[2] * 0x8C9F / 100 + 1;
+        vJoyDevices[Index].position.bHatsEx2 = data_buf.InitValPov[2] * 3599 / 100 + 1;
 
     if (data_buf.InitValPov[3] == 0xFF)
         vJoyDevices[Index].position.bHatsEx3 = (DWORD)-1;
     else
-        vJoyDevices[Index].position.bHatsEx3 = data_buf.InitValPov[3] * 0x8C9F / 100 + 1;
+        vJoyDevices[Index].position.bHatsEx3 = data_buf.InitValPov[3] * 3599 / 100 + 1;
 
     vJoyDevices[Index].position.lButtons = ((DWORD*)(data_buf.ButtonMask))[0];
     vJoyDevices[Index].position.lButtonsEx1 = ((DWORD*)(data_buf.ButtonMask))[1];

@@ -9,6 +9,7 @@
 
 #define DEV				1
 #define DEV_GEN			1	// The non-FFB Joystick part
+#define DEV_ALLAXES     0	// Default to all 16 axes
 #define DEV_FFB			0	// The FFB Joystick part
 #define DEV_ADDITIONAL	0	// The additional part inside the non-FFB part
 

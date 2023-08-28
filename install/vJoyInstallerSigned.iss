@@ -7,13 +7,16 @@
 #define MyAppURL "http://vjoystick.sourceforge.net"
 #define AppGUID "{{8E31F76F-74C3-47F1-9550-E041EEDC5FBB}"
 
-#define vJoyInstx86 "..\Win32\Release\Package"
-#define vJoyInstx64 "..\x64\Release\Package"
-#define vJoyLibx86 "..\Win32\Release"
-#define vJoyLibx64 "..\x64\Release"
+#define BuildMode "Release"
+;#define BuildMode "Debug"
 
-#define vJoyAppsx86 "..\Win32\Release"
-#define vJoyAppsx64 "..\x64\Release"
+#define vJoyInstx86 "..\Win32\"+BuildMode+"\Package"
+#define vJoyInstx64 "..\x64\"+BuildMode+"\Package"
+#define vJoyLibx86 "..\Win32\"+BuildMode
+#define vJoyLibx64 "..\x64\"+BuildMode
+
+#define vJoyAppsx86 "..\Win32\"+BuildMode
+#define vJoyAppsx64 "..\x64\"+BuildMode
 
 #define vJoyMonDirx86 "..\apps\External\JoyMonitor\x86"
 #define vJoyMonDirx64 "..\apps\External\JoyMonitor\x64"
@@ -48,11 +51,11 @@ AppSupportURL={#MyAppURL}
 AppUpdatesURL={#MyAppURL}
 CreateAppDir=true
 OutputDir=.
-OutputBaseFilename=vJoySetup
+OutputBaseFilename=vJoySetup-{#DrvVerStr}
 SetupIconFile=install.ico
 Compression=lzma/Max
 SolidCompression=true
-DefaultDirName={pf}\{#MyShortAppName}
+DefaultDirName={commonpf}\{#MyShortAppName}
 DefaultGroupName={#MyShortAppName}
 VersionInfoCompany=Shaul Eizikovich
 AppCopyright=Copyright (c) 2005-2016 by Shaul Eizikovich
@@ -921,7 +924,7 @@ begin
   // Merge file to registry
   if (not FileExists(ExpandConstant('{src}\'+FileName))) then
     begin
-      Log('InitFromRegistry(): File' + ExpandConstant('{src}\'+FileName) + ' not found');
+      Log('InitFromRegistry(): Default optional registry File' + ExpandConstant('{src}\'+FileName) + ' not found, continue without it');
       exit;
     end;
 

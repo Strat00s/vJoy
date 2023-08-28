@@ -226,8 +226,7 @@ typedef BOOL(WINAPI* StatusMessageFunc)(void* output, TCHAR* buffer, enum ERRLEV
 
 #if USE_JOYSTICK_API_VERSION == 1
 
-typedef struct _JOYSTICK_POSITION
-{
+typedef struct _JOYSTICK_POSITION {
     BYTE	bDevice;	// Index of device. 1-based.
     LONG	wThrottle;
     LONG	wRudder;
@@ -264,8 +263,7 @@ typedef struct _JOYSTICK_POSITION
 
 // Superset of JOYSTICK_POSITION
 // Extension of JOYSTICK_POSITION with Buttons 33-128 appended to the end of the structure.
-typedef struct _JOYSTICK_POSITION_V2
-{
+typedef struct _JOYSTICK_POSITION_V2 {
     /// JOYSTICK_POSITION
     BYTE	bDevice;	// Index of device. 1-based.
     LONG	wThrottle;
@@ -311,8 +309,7 @@ typedef PJOYSTICK_POSITION_V2 PJOYSTICK_POSITION;
 #elif USE_JOYSTICK_API_VERSION == 3
 
 // Extension of JOYSTICK_POSITION for more axes
-typedef struct _JOYSTICK_POSITION_V3
-{
+typedef struct _JOYSTICK_POSITION_V3 {
     /// JOYSTICK_POSITION
     BYTE    bDevice;	// Index of device. 1-based.
 
@@ -340,12 +337,12 @@ typedef struct _JOYSTICK_POSITION_V3
 
     LONG    lButtons;	// 32 buttons: 0x00000001 means button1 is pressed, 0x80000000 -> button32 is pressed
 
-    DWORD   bHats;		// Lower 4 bits: HAT switch or 16-bit of continuous HAT switch
-    DWORD   bHatsEx1;	// Lower 4 bits: HAT switch or 16-bit of continuous HAT switch
-    DWORD   bHatsEx2;	// Lower 4 bits: HAT switch or 16-bit of continuous HAT switch
-    DWORD   bHatsEx3;	// Lower 4 bits: HAT switch or 16-bit of continuous HAT switch LONG lButtonsEx1; // Buttons 33-64
-
-    /// JOYSTICK_POSITION_V2 Extenssion
+    DWORD   bHats;		// Lower 4 bits: HAT switch or 16-bit of continuous HAT switch (0->3599)
+    DWORD   bHatsEx1;	// Lower 4 bits: HAT switch or 16-bit of continuous HAT switch (0->3599)
+    DWORD   bHatsEx2;	// Lower 4 bits: HAT switch or 16-bit of continuous HAT switch (0->3599)
+    DWORD   bHatsEx3;	// Lower 4 bits: HAT switch or 16-bit of continuous HAT switch (0->3599)
+    
+    /// JOYSTICK_POSITION_V2 Extension
     LONG    lButtonsEx1; // Buttons 33-64
     LONG    lButtonsEx2; // Buttons 65-96
     LONG    lButtonsEx3; // Buttons 97-128
@@ -364,7 +361,7 @@ typedef PJOYSTICK_POSITION_V3 PJOYSTICK_POSITION;
 #define VJOY_NUMBER_OF_AXES (16) // Maximum number of axes
 #define VJOY_NUMBER_OF_HAT (4) // Maximum number of hats
 #define VJOY_NUMBER_OF_BUTTONS (128) // Maximum number of hat
-#define VJOY_AXIS_MAX_VALUE (0x7FFF) // Maximum value for an axis
+#define VJOY_AXIS_MAX_VALUE (0x7FFF) // Maximum value for an axis (on a 16 bits)
 
 #endif
 
@@ -377,7 +374,7 @@ typedef PJOYSTICK_POSITION_V3 PJOYSTICK_POSITION;
 // FFB device!
 //#define VJOY_FORCE_WRONG_FFB_HID
 
-// Max 1..128 effect block index, 10 simultaneously played
+// Max 1..100 effect block index, 10 simultaneously played
 #define VJOY_FFB_FIRST_EFFECT_ID            (1)
 #define VJOY_FFB_MAX_EFFECTS_BLOCK_INDEX    (100)
 #define VJOY_FFB_MAX_SIMULTANEOUS_EFFECTS   (10)
@@ -395,8 +392,7 @@ typedef PJOYSTICK_POSITION_V3 PJOYSTICK_POSITION;
 
 // FFB: PID Block Load Feature Report=2
 // Only one per device
-typedef struct _FFB_PID_BLOCK_LOAD_REPORT
-{
+typedef struct _FFB_PID_BLOCK_LOAD_REPORT {
     // 1..100. If 0, then error (LoadStatus below is 2 or 3)
     BYTE    EffectBlockIndex;
     // 0 ongoing, 1=Success,2=Full,3=Error
@@ -406,8 +402,7 @@ typedef struct _FFB_PID_BLOCK_LOAD_REPORT
 } FFB_PID_BLOCK_LOAD_REPORT, * PFFB_PID_BLOCK_LOAD_REPORT;
 
 // FFB: PID Pool Feature Report=3
-typedef struct _FFB_PID_POOL_REPORT
-{
+typedef struct _FFB_PID_POOL_REPORT {
     // equals sizeof(FFB_PID_EFFECT_STATE_REPORT) * 100, max is 0xFFFF
     USHORT	RAMPoolSize;
     // 0..10
@@ -418,8 +413,7 @@ typedef struct _FFB_PID_POOL_REPORT
 
 // FFB: PID Effect State Report
 // Up to MAX_FFB_EFFECTS_BLOCK_INDEX per device
-typedef struct _FFB_PID_EFFECT_STATE_REPORT
-{
+typedef struct _FFB_PID_EFFECT_STATE_REPORT {
     // Bitfield for PID Effect State Report, bit:
     // 0: Effect Playing
     // 1: Device Paused
@@ -435,8 +429,7 @@ typedef struct _FFB_PID_EFFECT_STATE_REPORT
 
 // All FFB PID data, one per device
 // This struct will be transfered between vJoy and client application
-typedef struct _FFB_DEVICE_PID
-{
+typedef struct _FFB_DEVICE_PID {
     FFB_PID_BLOCK_LOAD_REPORT   PIDBlockLoad;
     FFB_PID_POOL_REPORT         PIDPool;
     // All Effect States, as 2-bytes

@@ -1,7 +1,11 @@
 REM Automate the creation of an SDK package
+
+SET BuildMode=Release
+REM SET BuildMode=Debug
+
 SET SDK_PATH=SDK
-SET X64RELEASE_PATH=X64\Release
-SET X86RELEASE_PATH=Win32\Release
+SET X64RELEASE_PATH=X64\%BuildMode%
+SET X86RELEASE_PATH=Win32\%BuildMode%
 SET INC_PATH=Inc
 SET ZIP=%ProgramFiles%\7-Zip\7z.exe
 SET ARCHIVE_NAME=vJoySDK.zip

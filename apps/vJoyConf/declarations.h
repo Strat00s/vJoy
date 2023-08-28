@@ -38,7 +38,7 @@
 #define NEXT_BYTE(vReport,Data) \
     do { \
         vReport.push_back(Data); \
-    } while (false);
+    } while (false)
 #endif
 
 #ifndef	 NEXT_SHORT
@@ -46,7 +46,7 @@
     do { \
         vReport.push_back(Data&0xFF); \
         vReport.push_back((Data&0xFF00)>>8); \
-    } while(false);
+    } while(false)
 #endif
 
 

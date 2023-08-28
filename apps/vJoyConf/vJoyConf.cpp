@@ -122,9 +122,9 @@ void				FfbCBChanged(void);
 UINT16				GetFfbEffectMask(void);
 
 int APIENTRY _tWinMain(_In_ HINSTANCE hInstance,
-    _In_opt_ HINSTANCE hPrevInstance,
-    _In_ LPTSTR    lpCmdLine,
-    _In_ int       nCmdShow)
+                       _In_opt_ HINSTANCE hPrevInstance,
+                       _In_ LPTSTR    lpCmdLine,
+                       _In_ int       nCmdShow)
 {
     UNREFERENCED_PARAMETER(hPrevInstance);
     UNREFERENCED_PARAMETER(lpCmdLine);
@@ -341,6 +341,7 @@ INT_PTR CALLBACK DlgTabCB(HWND hDlgTab, UINT message, WPARAM wParam, LPARAM lPar
                 case IDC_CHK_FFB_DAMPER:
                 case IDC_CHK_FFB_INERTIA:
                 case IDC_CHK_FFB_FRICTION:
+                case IDC_CHK_FFB_CUSTOM:
                     OnUserChanged();
                     break;
 
@@ -770,14 +771,14 @@ void PopulateTab(int iTab)
     BOOL Exist_SL0 = TRUE;
     BOOL Exist_SL1 = TRUE;
 
-    BOOL Exist_Wheel = TRUE;
-    BOOL Exist_Accelerator = TRUE;
-    BOOL Exist_Brake = TRUE;
-    BOOL Exist_Clutch = TRUE;
-    BOOL Exist_Steering = TRUE;
-    BOOL Exist_Aileron = TRUE;
-    BOOL Exist_Rudder = TRUE;
-    BOOL Exist_Throttle = TRUE;
+    BOOL Exist_Wheel = FALSE;
+    BOOL Exist_Accelerator = FALSE;
+    BOOL Exist_Brake = FALSE;
+    BOOL Exist_Clutch = FALSE;
+    BOOL Exist_Steering = FALSE;
+    BOOL Exist_Aileron = FALSE;
+    BOOL Exist_Rudder = FALSE;
+    BOOL Exist_Throttle = FALSE;
 
     int nBtn = 32;
     int nDiscPov = 0;
@@ -810,7 +811,7 @@ void PopulateTab(int iTab)
         // POV
         nDiscPov = vJoyDevice[iTab]->GetDiscPovNumber();
         nContPov = vJoyDevice[iTab]->GetContPovNumber();
-    };
+    }
 
     //// Write data to User Interface
     // Axes
@@ -986,7 +987,7 @@ int CreateHidReportDesc(void** data, UINT nButtons, bool* axes, int nPovHatsCont
     if (nPovHatsDir>VJOY_NUMBER_OF_HAT)
         nPovHatsDir = VJOY_NUMBER_OF_HAT;
 
-    BYTE AxesHID[]{
+    BYTE AxesHID[] {
         HID_USAGE_X,
         HID_USAGE_Y,
         HID_USAGE_Z,
@@ -1011,107 +1012,110 @@ int CreateHidReportDesc(void** data, UINT nButtons, bool* axes, int nPovHatsCont
     buffer.clear();
 
     /* Create standard header */
-    NEXT_BYTE(buffer, HIDP_GLOBAL_USAGE_PAGE_1);     // USAGE_PAGE(Generic Desktop):		05 01
+    NEXT_BYTE(buffer, HIDP_GLOBAL_USAGE_PAGE_1);        // USAGE_PAGE(Generic Desktop):		05 01
     NEXT_BYTE(buffer, HID_USAGE_PAGE_GENERIC);
     NEXT_BYTE(buffer, HIDP_GLOBAL_LOG_MIN_1);			// LOGICAL_MINIMUM(0):				15 00
     NEXT_BYTE(buffer, 0);
-    NEXT_BYTE(buffer, HIDP_LOCAL_USAGE_1);			// USAGE (Joystick):				09 04
+    NEXT_BYTE(buffer, HIDP_LOCAL_USAGE_1);			    // USAGE (Joystick):				09 04
     NEXT_BYTE(buffer, HID_USAGE_GENERIC_JOYSTICK);
     NEXT_BYTE(buffer, HIDP_MAIN_COLLECTION);			// COLLECTION( Application):		A1 01
     NEXT_BYTE(buffer, HIDP_MAIN_COLLECTION_APP);
 
     /* Collection 1 */
-    NEXT_BYTE(buffer, HIDP_GLOBAL_USAGE_PAGE_1);		// USAGE_PAGE(Generic Desktop):		05 01
+    NEXT_BYTE(buffer, HIDP_GLOBAL_USAGE_PAGE_1);		    // USAGE_PAGE(Generic Desktop):		05 01
     NEXT_BYTE(buffer, HID_USAGE_PAGE_GENERIC);
-    NEXT_BYTE(buffer, HIDP_GLOBAL_REPORT_ID);			//	REPORT_ID (x)					85 ID
+    NEXT_BYTE(buffer, HIDP_GLOBAL_REPORT_ID);			    // REPORT_ID (x)					85 ID
     NEXT_BYTE(buffer, ReportId);
-    NEXT_BYTE(buffer, HIDP_LOCAL_USAGE_1);			// USAGE(Pointer):					09 01
+    NEXT_BYTE(buffer, HIDP_LOCAL_USAGE_1);			        // USAGE(Pointer):					09 01
     NEXT_BYTE(buffer, HID_USAGE_GENERIC_POINTER);
-    NEXT_BYTE(buffer, HIDP_GLOBAL_LOG_MIN_1);			// LOGICAL_MINIMUM(0):				15 00
+    NEXT_BYTE(buffer, HIDP_GLOBAL_LOG_MIN_1);			    // LOGICAL_MINIMUM(0):				15 00
     NEXT_BYTE(buffer, 0);
-    NEXT_BYTE(buffer, HIDP_GLOBAL_LOG_MAX_2);			// LOGICAL_MAXIMUM(32767):			26 FF 7F
+    NEXT_BYTE(buffer, HIDP_GLOBAL_LOG_MAX_2);			    // LOGICAL_MAXIMUM(32767):			26 FF 7F
     NEXT_SHORT(buffer, VJOY_AXIS_MAX_VALUE);
-    NEXT_BYTE(buffer, HIDP_GLOBAL_REPORT_SIZE);		// REPORT_SIZE(32):					75 20
-    NEXT_BYTE(buffer, 0x20);
-    NEXT_BYTE(buffer, HIDP_GLOBAL_REPORT_COUNT_1);	// REPORT_COUNT(1):					95 01
+    NEXT_BYTE(buffer, HIDP_GLOBAL_REPORT_SIZE);		        // REPORT_SIZE(16):					75 10
+    NEXT_BYTE(buffer, 0x10);
+    NEXT_BYTE(buffer, HIDP_GLOBAL_REPORT_COUNT_1);	        // REPORT_COUNT(1):					95 01
     NEXT_BYTE(buffer, 0x01);
-    NEXT_BYTE(buffer, HIDP_MAIN_COLLECTION);			// COLLECTION(Physical):			A1 00
+    NEXT_BYTE(buffer, HIDP_MAIN_COLLECTION);			    // COLLECTION(Physical):			A1 00
     NEXT_BYTE(buffer, 0x00);
 
     /** Collection 2 **/
-    /* Loop on fitst Axes */
+    /* Loop on first Axes */
     for (int i = 0; i<VJOY_NUMBER_OF_AXES; i++) {
         if (axes[i]) {
             // Insert Axis
-            NEXT_BYTE(buffer, HIDP_LOCAL_USAGE_1);	// USAGE(X+offset):					0x09 0x30+i
+            NEXT_BYTE(buffer, HIDP_LOCAL_USAGE_1);	            // USAGE(X+offset):					0x09 0x30+i
             NEXT_BYTE(buffer, AxesHID[i]);
-            NEXT_BYTE(buffer, HIDP_MAIN_INPUT_1);		// INPUT (Data,Var,Abs):			0x81 0x02
+            NEXT_BYTE(buffer, HIDP_MAIN_INPUT_1);		        // INPUT (Data,Var,Abs):			0x81 0x02
             NEXT_BYTE(buffer, 0x02);
         } else {
             // Insert place holder
-            NEXT_BYTE(buffer, HIDP_MAIN_INPUT_1);		// INPUT (Cnst,Ary,Abs):			0x81 0x01
+            NEXT_BYTE(buffer, HIDP_MAIN_INPUT_1);		        // INPUT (Cnst,Ary,Abs):			0x81 0x01
             NEXT_BYTE(buffer, 0x01);
         }
     }
-    NEXT_BYTE(buffer, HIDP_MAIN_ENDCOLLECTION);		// END_COLLECTION:					0xC0
+    NEXT_BYTE(buffer, HIDP_MAIN_ENDCOLLECTION);		        // END_COLLECTION:					0xC0
 
     if (nPovHatsDir) {
         // POV - supported: One switch at most, 5-state only
-        NEXT_BYTE(buffer, HIDP_GLOBAL_LOG_MIN_1);			// LOGICAL_MINIMUM(0):		15 00
+        NEXT_BYTE(buffer, HIDP_GLOBAL_LOG_MIN_1);			// LOGICAL_MINIMUM (0):		15 00
         NEXT_BYTE(buffer, 0x00);
-        NEXT_BYTE(buffer, HIDP_GLOBAL_LOG_MAX_1);			// LOGICAL_MAXIMUM(3):		25 03
+        NEXT_BYTE(buffer, HIDP_GLOBAL_LOG_MAX_1);			// LOGICAL_MAXIMUM (3):		25 03
         NEXT_BYTE(buffer, 0x03);
         NEXT_BYTE(buffer, HIDP_GLOBAL_PHY_MIN_1);			// PHYSICAL_MINIMUM (0):	35 00
         NEXT_BYTE(buffer, 0x00);
         NEXT_BYTE(buffer, HIDP_GLOBAL_PHY_MAX_2);			// PHYSICAL_MAXIMUM (270):	46 0e 01
         NEXT_SHORT(buffer, 0x010e);
-        NEXT_BYTE(buffer, HIDP_GLOBAL_UNIT_1);			// UNIT (Eng Rot:Angular Pos):	65 14
+        NEXT_BYTE(buffer, HIDP_GLOBAL_UNIT_1);			    // UNIT (Eng Rot:Angular Pos):	65 14
         NEXT_BYTE(buffer, 0x14);
-        // One 4-bit data  + 31 4-bit padding
-        NEXT_BYTE(buffer, HIDP_GLOBAL_REPORT_SIZE);		// REPORT_SIZE(4):			75 04
+        // One 4-bit data per POV + (16 - nbPOVs) x 4-bit padding
+        NEXT_BYTE(buffer, HIDP_GLOBAL_REPORT_SIZE);		    // REPORT_SIZE(4):			75 04
         NEXT_BYTE(buffer, 0x04);
-        NEXT_BYTE(buffer, HIDP_GLOBAL_REPORT_COUNT_1);	// REPORT_COUNT(1):			95 01
+        NEXT_BYTE(buffer, HIDP_GLOBAL_REPORT_COUNT_1);	    // REPORT_COUNT(1):			95 01
         NEXT_BYTE(buffer, 0x01);
 
         // Insert 1-4 5-state POVs
         for (int i = 1; i <= nPovHatsDir; i++) {
             NEXT_BYTE(buffer, HIDP_LOCAL_USAGE_1);			// USAGE(Hat switch):		0x09 0x39
             NEXT_BYTE(buffer, HID_USAGE_GENERIC_HATSWITCH);
-            NEXT_BYTE(buffer, HIDP_MAIN_INPUT_1);				// INPUT (Data,Var,Abs):	0x81 0x02
+            NEXT_BYTE(buffer, HIDP_MAIN_INPUT_1);			// INPUT (Data,Var,Abs):	0x81 0x02
             NEXT_BYTE(buffer, 0x02);
         }
 
         // Insert 5-state POV place holders
-        NEXT_BYTE(buffer, HIDP_GLOBAL_REPORT_COUNT_1);	// REPORT_COUNT(31):		95 1F
-        NEXT_BYTE(buffer, 0x20 - nPovHatsDir);
+        NEXT_BYTE(buffer, HIDP_GLOBAL_REPORT_COUNT_1);	    // REPORT_COUNT(31):		95 1F
+        NEXT_BYTE(buffer, 0x10 - nPovHatsDir);
         NEXT_BYTE(buffer, HIDP_MAIN_INPUT_1);				// INPUT (Cnst,Ary,Abs):	0x81 0x01
         NEXT_BYTE(buffer, 0x01);
 
     } else if (nPovHatsCont) {
         // Continuous POV
-        NEXT_BYTE(buffer, HIDP_GLOBAL_LOG_MIN_1);			// LOGICAL_MINIMUM(0):		15 00
+        NEXT_BYTE(buffer, HIDP_GLOBAL_LOG_MIN_1);			// LOGICAL_MINIMUM (0):		15 00
         NEXT_BYTE(buffer, 0x00);
-        NEXT_BYTE(buffer, HIDP_GLOBAL_LOG_MAX_4);			// LOGICAL_MAXIMUM(35900):	27 3c 8c 00 00
-        NEXT_SHORT(buffer, 0x8C3C);
+        // TODO: use shorter maximum (16bits)
+        NEXT_BYTE(buffer, HIDP_GLOBAL_LOG_MAX_4);			// LOGICAL_MAXIMUM (3599):	27 0F 0E 00 00
+        NEXT_SHORT(buffer, 0x0E0F);
         NEXT_SHORT(buffer, 0x0000);
         NEXT_BYTE(buffer, HIDP_GLOBAL_PHY_MIN_1);			// PHYSICAL_MINIMUM (0):	35 00
         NEXT_BYTE(buffer, 0x00);
-        NEXT_BYTE(buffer, HIDP_GLOBAL_PHY_MAX_4);			// PHYSICAL_MAXIMUM (35900):	47 3c 8c 00 00
-        NEXT_SHORT(buffer, 0x8C3C);
+        NEXT_BYTE(buffer, HIDP_GLOBAL_PHY_MAX_4);			// PHYSICAL_MAXIMUM (3599):	47 0F 0E 00 00
+        NEXT_SHORT(buffer, 0x0E0F);
         NEXT_SHORT(buffer, 0x0000);
-        NEXT_BYTE(buffer, HIDP_GLOBAL_UNIT_1);			// UNIT (Eng Rot:Angular Pos):	65 14
+        NEXT_BYTE(buffer, HIDP_GLOBAL_UNIT_1);			    // UNIT (Eng Rot:Angular Pos):	65 14
         NEXT_BYTE(buffer, 0x14);
+        //NEXT_BYTE(buffer, HIDP_GLOBAL_UNIT_EXP_1);			// Unit Exponent FEh (-2d):	55 fe
+        //NEXT_BYTE(buffer, 0xfe);
         //
-        NEXT_BYTE(buffer, HIDP_GLOBAL_REPORT_SIZE);		// REPORT_SIZE(32):			75 20
-        NEXT_BYTE(buffer, 0x20);
-        NEXT_BYTE(buffer, HIDP_GLOBAL_REPORT_COUNT_1);	// REPORT_COUNT(1):			95 01
+        NEXT_BYTE(buffer, HIDP_GLOBAL_REPORT_SIZE);		    // REPORT_SIZE(16):			75 10
+        NEXT_BYTE(buffer, 0x10);
+        NEXT_BYTE(buffer, HIDP_GLOBAL_REPORT_COUNT_1);	    // REPORT_COUNT(1):			95 01
         NEXT_BYTE(buffer, 0x01);
 
         // Insert 1-4 continuous POVs
         for (int i = 1; i <= nPovHatsCont; i++) {
             NEXT_BYTE(buffer, HIDP_LOCAL_USAGE_1);			// USAGE(Hat switch):		0x09 0x39
             NEXT_BYTE(buffer, HID_USAGE_GENERIC_HATSWITCH);
-            NEXT_BYTE(buffer, HIDP_MAIN_INPUT_1);				// INPUT (Data,Var,Abs):	0x81 0x02
+            NEXT_BYTE(buffer, HIDP_MAIN_INPUT_1);			// INPUT (Data,Var,Abs):	0x81 0x02
             NEXT_BYTE(buffer, 0x02);
         }
 
@@ -1119,14 +1123,15 @@ int CreateHidReportDesc(void** data, UINT nButtons, bool* axes, int nPovHatsCont
         if (nPovHatsCont<4) {
             NEXT_BYTE(buffer, HIDP_GLOBAL_REPORT_COUNT_1);	// REPORT_COUNT(3):		95 03
             NEXT_BYTE(buffer, 0x04 - nPovHatsCont);
-            NEXT_BYTE(buffer, HIDP_MAIN_INPUT_1);				// INPUT (Cnst,Ary,Abs):	0x81 0x01
+            NEXT_BYTE(buffer, HIDP_MAIN_INPUT_1);			// INPUT (Cnst,Ary,Abs):	0x81 0x01
             NEXT_BYTE(buffer, 0x01);
         }
+
     } else {
         // Sixteen 4-bit padding
-        NEXT_BYTE(buffer, HIDP_GLOBAL_REPORT_SIZE);		// REPORT_SIZE(32):			75 20
-        NEXT_BYTE(buffer, 0x20);
-        NEXT_BYTE(buffer, HIDP_GLOBAL_REPORT_COUNT_1);	// REPORT_COUNT(4):			95 04
+        NEXT_BYTE(buffer, HIDP_GLOBAL_REPORT_SIZE);		    // REPORT_SIZE(16):			75 10
+        NEXT_BYTE(buffer, 0x10);
+        NEXT_BYTE(buffer, HIDP_GLOBAL_REPORT_COUNT_1);	    // REPORT_COUNT(4):			95 04
         NEXT_BYTE(buffer, 0x04);
         NEXT_BYTE(buffer, HIDP_MAIN_INPUT_1);				// INPUT (Cnst,Ary,Abs):	0x81 0x01
         NEXT_BYTE(buffer, 0x01);
@@ -1140,34 +1145,34 @@ int CreateHidReportDesc(void** data, UINT nButtons, bool* axes, int nPovHatsCont
     //		nButtons++;
 
     // There are buttons
-    NEXT_BYTE(buffer, HIDP_GLOBAL_USAGE_PAGE_1);		// USAGE_PAGE(Buttons):		05 09
+    NEXT_BYTE(buffer, HIDP_GLOBAL_USAGE_PAGE_1);		    // USAGE_PAGE(Buttons):		05 09
     NEXT_BYTE(buffer, HID_USAGE_PAGE_BUTTON);
-    NEXT_BYTE(buffer, HIDP_GLOBAL_LOG_MIN_1); 		// LOGICAL_MINIMUM(0):		15 00
+    NEXT_BYTE(buffer, HIDP_GLOBAL_LOG_MIN_1); 		        // LOGICAL_MINIMUM(0):		15 00
     NEXT_BYTE(buffer, 0x00);
-    NEXT_BYTE(buffer, HIDP_GLOBAL_LOG_MAX_1);			// LOGICAL_MAXIMUM(0):		25 01
+    NEXT_BYTE(buffer, HIDP_GLOBAL_LOG_MAX_1);			    // LOGICAL_MAXIMUM(0):		25 01
     NEXT_BYTE(buffer, 0x01);
-    NEXT_BYTE(buffer, HIDP_GLOBAL_UNIT_EXP_1);		// UNIT_EXPONENT(0):		55 00
+    NEXT_BYTE(buffer, HIDP_GLOBAL_UNIT_EXP_1);		        // UNIT_EXPONENT(0):		55 00
     NEXT_BYTE(buffer, 0x00);
-    NEXT_BYTE(buffer, HIDP_GLOBAL_UNIT_1);			// UNIT (None):				65 00
+    NEXT_BYTE(buffer, HIDP_GLOBAL_UNIT_1);			        // UNIT (None):				65 00
     NEXT_BYTE(buffer, 0x00);
-    NEXT_BYTE(buffer, HIDP_LOCAL_USAGE_MIN_1);		// USAGE_MINIMUM(1):		19 01/00
+    NEXT_BYTE(buffer, HIDP_LOCAL_USAGE_MIN_1);		        // USAGE_MINIMUM(1):		19 01/00
     NEXT_BYTE(buffer, localminusage_buttons);
-    NEXT_BYTE(buffer, HIDP_LOCAL_USAGE_MAX_1);		// USAGE_MAXIMUM(nButtons):	29 nButtons
+    NEXT_BYTE(buffer, HIDP_LOCAL_USAGE_MAX_1);		        // USAGE_MAXIMUM(nButtons):	29 nButtons
     NEXT_BYTE(buffer, nButtons);
-    NEXT_BYTE(buffer, HIDP_GLOBAL_REPORT_SIZE);		// REPORT_SIZE(1):			75 01
+    NEXT_BYTE(buffer, HIDP_GLOBAL_REPORT_SIZE);		        // REPORT_SIZE(1):			75 01
     NEXT_BYTE(buffer, 0x01);
-    NEXT_BYTE(buffer, HIDP_GLOBAL_REPORT_COUNT_1);	// REPORT_COUNT(nButtons):	95 nButtons
+    NEXT_BYTE(buffer, HIDP_GLOBAL_REPORT_COUNT_1);	        // REPORT_COUNT(nButtons):	95 nButtons
     NEXT_BYTE(buffer, nButtons);
-    NEXT_BYTE(buffer, HIDP_MAIN_INPUT_1);				// INPUT (Data,Var,Abs):	0x81 0x02
+    NEXT_BYTE(buffer, HIDP_MAIN_INPUT_1);				    // INPUT (Data,Var,Abs):	0x81 0x02
     NEXT_BYTE(buffer, 0x02);
 
     // Padding, if there are less than 32 buttons
     if (nButtons < VJOY_NUMBER_OF_BUTTONS) {
-        NEXT_BYTE(buffer, HIDP_GLOBAL_REPORT_SIZE);	// REPORT_SIZE(x):		75 32-nButtons
+        NEXT_BYTE(buffer, HIDP_GLOBAL_REPORT_SIZE);	        // REPORT_SIZE(x):		75 32-nButtons
         NEXT_BYTE(buffer, VJOY_NUMBER_OF_BUTTONS - nButtons);
-        NEXT_BYTE(buffer, HIDP_GLOBAL_REPORT_COUNT_1);	// REPORT_COUNT(1):	95 nButtons
+        NEXT_BYTE(buffer, HIDP_GLOBAL_REPORT_COUNT_1);	    // REPORT_COUNT(1):	95 nButtons
         NEXT_BYTE(buffer, 0x01);
-        NEXT_BYTE(buffer, HIDP_MAIN_INPUT_1);			// INPUT (Cnst,Ary,Abs):0x81 0x01
+        NEXT_BYTE(buffer, HIDP_MAIN_INPUT_1);			    // INPUT (Cnst,Ary,Abs):0x81 0x01
         NEXT_BYTE(buffer, 0x01);
     }
 
@@ -1383,11 +1388,11 @@ HWND CreateToolTip(HWND hDlg, const int arr[], int size)
 
     // Create the tooltip.
     HWND hwndTip = CreateWindowEx(NULL, TOOLTIPS_CLASS, NULL,
-        WS_POPUP | TTS_ALWAYSTIP | TTS_BALLOON | WS_EX_TOOLWINDOW,
-        CW_USEDEFAULT, CW_USEDEFAULT,
-        CW_USEDEFAULT, CW_USEDEFAULT,
-        hDlg, NULL,
-        g_hInstance, NULL);
+                                  WS_POPUP | TTS_ALWAYSTIP | TTS_BALLOON | WS_EX_TOOLWINDOW,
+                                  CW_USEDEFAULT, CW_USEDEFAULT,
+                                  CW_USEDEFAULT, CW_USEDEFAULT,
+                                  hDlg, NULL,
+                                  g_hInstance, NULL);
 
     if (!hwndTip)
         hwndToolTip = (HWND)NULL;
@@ -1750,10 +1755,11 @@ void CreateFfbDesc(std::vector<BYTE>* buffer, BYTE ReportId)
 // Modify the Descriptor according to the FFB Effects the user selects
 // Parameters:
 // Buffer: Descriptor to be modified
-// Mask: Bit-mask representing the effects required
+// Mask: Bit-mask representing the effects required, in the specific order
+// of the model descriptor
 void ModifyFfbEffectDesc(std::vector<BYTE>* buffer, UINT16 Mask)
 {
-    int Effect[]{ HID_USAGE_CONST,
+    int Effect[] { HID_USAGE_CONST,
         HID_USAGE_RAMP,
         HID_USAGE_SQUR,
         HID_USAGE_SINE,
@@ -1763,21 +1769,30 @@ void ModifyFfbEffectDesc(std::vector<BYTE>* buffer, UINT16 Mask)
         HID_USAGE_SPRNG,
         HID_USAGE_DMPR,
         HID_USAGE_INRT,
-        HID_USAGE_FRIC
+        HID_USAGE_FRIC,
+        HID_USAGE_CUSTM
     };
+
     BYTE nEff = sizeof(Effect) / sizeof(int);
 
-    // Search for sequence(0x09, 0x25, 0xA1, 0x02)
-    for (auto& i : *buffer) {
-        if ((i == 0x09) && (*std::next(&i, 1) == 0x25) && (*std::next(&i, 2) == 0xA1) && (*std::next(&i, 3) == 0x02)) {
+    // Search for sequence(0x09, 0x25, 0xA1, 0x02) in the "model" descriptor.
+    // There should be 2 positions within the descriptor where we will replace
+    // the HID_USAGE_XX by the reserved value so that they are not seen.
+    // This will disable the given effect.
+    int reportIdx = 0;
+    for (int i = 0; i<(*buffer).size(); i++) {
+        auto val = (*buffer)[i];
+        if ((val == 0x09) && ((*buffer)[i+1] == 0x25) && ((*buffer)[i+2] == 0xA1) && ((*buffer)[i+3] == 0x02)) {
+            reportIdx++;
             // Sequence found - now replace by going over the effects 
             for (BYTE e = 0; e < nEff; e++) {
+                int rep = (*buffer)[i+5 + e * 2];
                 if ((Mask >> (nEff-e-1)) & 0x01) {
                     // Fill all effects types
-                    *std::next(&i, 5 + e * 2) = Effect[e];
+                    (*buffer)[i+5 + e * 2] = Effect[e];
                 } else {
                     // Fill unused effect (reserved)
-                    *std::next(&i, 5 + e * 2) = HID_USAGE_RESERVD;
+                    (*buffer)[i+5 + e * 2] = HID_USAGE_RESERVD;
                 }
             }
         }
@@ -1826,7 +1841,7 @@ void EnableFfbEffectCB(BOOL Enable)
     {
         IDC_CHK_FFB_CONST,  IDC_CHK_FFB_RAMP, IDC_CHK_FFB_SQUARE,  IDC_CHK_FFB_SINE,
         IDC_CHK_FFB_TRI, IDC_CHK_FFB_STUP,  IDC_CHK_FFB_STDN,  IDC_CHK_FFB_SPRING,
-        IDC_CHK_FFB_DAMPER,  IDC_CHK_FFB_INERTIA, IDC_CHK_FFB_FRICTION
+        IDC_CHK_FFB_DAMPER,  IDC_CHK_FFB_INERTIA, IDC_CHK_FFB_FRICTION, IDC_CHK_FFB_CUSTOM
     };
 
     for (auto effect : cb)
@@ -1843,7 +1858,7 @@ void UpdateFfbEffectCB(int rID)
     {
         { IDC_CHK_FFB_CONST, 0x26 }, { IDC_CHK_FFB_RAMP, 0x27 }, { IDC_CHK_FFB_SQUARE, 0x30 }, { IDC_CHK_FFB_SINE, 0x31 },
         { IDC_CHK_FFB_TRI, 0x32 }, { IDC_CHK_FFB_STUP, 0x33 }, { IDC_CHK_FFB_STDN, 0x34 }, { IDC_CHK_FFB_SPRING, 0x40 },
-        { IDC_CHK_FFB_DAMPER, 0x41 }, { IDC_CHK_FFB_INERTIA, 0x42 }, { IDC_CHK_FFB_FRICTION, 0x43 }
+        { IDC_CHK_FFB_DAMPER, 0x41 }, { IDC_CHK_FFB_INERTIA, 0x42 }, { IDC_CHK_FFB_FRICTION, 0x43 }, {IDC_CHK_FFB_CUSTOM, 0x28}
     };
 
     for (auto effect : pairs) {
@@ -1863,8 +1878,8 @@ void ClearFfbEffectCB(void)
     int cb[]
     {
         IDC_CHK_FFB_CONST, IDC_CHK_FFB_RAMP, IDC_CHK_FFB_SQUARE, IDC_CHK_FFB_SINE,
-            IDC_CHK_FFB_TRI, IDC_CHK_FFB_STUP, IDC_CHK_FFB_STDN, IDC_CHK_FFB_SPRING,
-            IDC_CHK_FFB_DAMPER, IDC_CHK_FFB_INERTIA, IDC_CHK_FFB_FRICTION
+        IDC_CHK_FFB_TRI, IDC_CHK_FFB_STUP, IDC_CHK_FFB_STDN, IDC_CHK_FFB_SPRING,
+        IDC_CHK_FFB_DAMPER, IDC_CHK_FFB_INERTIA, IDC_CHK_FFB_FRICTION, IDC_CHK_FFB_CUSTOM
     };
 
     for (auto effect : cb) {
@@ -1880,8 +1895,8 @@ void SetFfbEffectCB(void)
     int cb[]
     {
         IDC_CHK_FFB_CONST, IDC_CHK_FFB_RAMP, IDC_CHK_FFB_SQUARE, IDC_CHK_FFB_SINE,
-            IDC_CHK_FFB_TRI, IDC_CHK_FFB_STUP, IDC_CHK_FFB_STDN, IDC_CHK_FFB_SPRING,
-            IDC_CHK_FFB_DAMPER, IDC_CHK_FFB_INERTIA, IDC_CHK_FFB_FRICTION
+        IDC_CHK_FFB_TRI, IDC_CHK_FFB_STUP, IDC_CHK_FFB_STDN, IDC_CHK_FFB_SPRING,
+        IDC_CHK_FFB_DAMPER, IDC_CHK_FFB_INERTIA, IDC_CHK_FFB_FRICTION, IDC_CHK_FFB_CUSTOM
     };
 
     for (auto effect : cb) {
@@ -1928,8 +1943,8 @@ UINT16 GetFfbEffectMask(void)
     int cb[]
     {
         IDC_CHK_FFB_CONST, IDC_CHK_FFB_RAMP, IDC_CHK_FFB_SQUARE, IDC_CHK_FFB_SINE,
-            IDC_CHK_FFB_TRI, IDC_CHK_FFB_STUP, IDC_CHK_FFB_STDN, IDC_CHK_FFB_SPRING,
-            IDC_CHK_FFB_DAMPER, IDC_CHK_FFB_INERTIA, IDC_CHK_FFB_FRICTION
+        IDC_CHK_FFB_TRI, IDC_CHK_FFB_STUP, IDC_CHK_FFB_STDN, IDC_CHK_FFB_SPRING,
+        IDC_CHK_FFB_DAMPER, IDC_CHK_FFB_INERTIA, IDC_CHK_FFB_FRICTION, IDC_CHK_FFB_CUSTOM
     };
 
     for (auto effect : cb) {

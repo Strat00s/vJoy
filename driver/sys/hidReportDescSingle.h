@@ -5,13 +5,14 @@
 0xA1, 0x01, //    Collection Application
     0x05, 0x01,                    //   USAGE_PAGE (Generic Desktop)
     0x85, TLID,                    //    Report ID 1
-    /***************** Eight Axes ************************************/
+    /***************** Up to Sixteen Axes ************************************/
     0x09, 0x01,                    //   USAGE (Pointer)
     0x15, 0x00,                    //   LOGICAL_MINIMUM (0)
-    0x26, (VJOY_AXIS_MAX_VALUE&0xFF), ((VJOY_AXIS_MAX_VALUE>>8)&0xFF), //   LOGICAL_MAXIMUM (32767) -> 65535
-    0x75, 0x20,                    //   REPORT_SIZE (32)
+    0x26, (VJOY_AXIS_MAX_VALUE&0xFF), ((VJOY_AXIS_MAX_VALUE>>8)&0xFF), //   LOGICAL_MAXIMUM (32767) -> 0x7fff
+    0x75, 0x10,                    //   REPORT_SIZE (16)
     0x95, 0x01,                    //   REPORT_COUNT (1)
     0xA1, 0x00,                    //   COLLECTION (Physical)
+        // First 8 axes
         0x09, 0x30,                    //     USAGE (X)
         0x81, 0x02,                    //     INPUT (Data,Var,Abs)
         0x09, 0x31,                    //     USAGE (Y)
@@ -28,6 +29,8 @@
         0x81, 0x02,                    //     INPUT (Data,Var,Abs)
         0x09, 0x37,                    //     USAGE (Dial)
         0x81, 0x02,                    //     INPUT (Data,Var,Abs)
+#if DEV_ALLAXES
+        // Next 8 axes
         0x09, 0x38,                    //     USAGE (Wheel)
         0x81, 0x02,                    //     INPUT (Data,Var,Abs)
         0x09, 0xC4,                    //     USAGE (Accelerator)
@@ -44,26 +47,38 @@
         0x81, 0x02,                    //     INPUT (Data,Var,Abs)
         0x09, 0xBB,                    //     USAGE (Throttle)
         0x81, 0x02,                    //     INPUT (Data,Var,Abs)
+#else
+        // Place-holders for remaining 8 axes
+        0x81, 0x01,                    //     INPUT (Cnst,Ary,Abs)
+        0x81, 0x01,                    //     INPUT (Cnst,Ary,Abs)
+        0x81, 0x01,                    //     INPUT (Cnst,Ary,Abs)
+        0x81, 0x01,                    //     INPUT (Cnst,Ary,Abs)
+        0x81, 0x01,                    //     INPUT (Cnst,Ary,Abs)
+        0x81, 0x01,                    //     INPUT (Cnst,Ary,Abs)
+        0x81, 0x01,                    //     INPUT (Cnst,Ary,Abs)
+        0x81, 0x01,                    //     INPUT (Cnst,Ary,Abs)
+#endif
+
     0xC0,                          //   END_COLLECTION
     /***************** Place holder for 4 POV Hat switches *******************/
-    0x75, 0x20,                    //   REPORT_SIZE (32)
+    0x75, 0x10,                    //   REPORT_SIZE (16)
     0x95, 0x04,                    //   REPORT_COUNT (4)
     0x81, 0x01,                    //   INPUT (Cnst,Ary,Abs)
 
-    /***************** Eight buttons *******************/
+    /***************** Twelve buttons *******************/
     0x05, 0x09,                    //   USAGE_PAGE (Button)
     0x15, 0x00,                    //   LOGICAL_MINIMUM (0)
     0x25, 0x01,                    //   LOGICAL_MAXIMUM (1)
     0x55, 0x00,                    //   UNIT_EXPONENT (0)
     0x65, 0x00,                    //   UNIT (None)
     0x19, 0x01,                    //   USAGE_MINIMUM (Button 1)
-    0x29, 0x08,                    //   USAGE_MAXIMUM (Button 8)
+    0x29, 0x0C,                    //   USAGE_MAXIMUM (Button 12)
     0x75, 0x01,                    //   REPORT_SIZE (1)
-    0x95, 0x08,                    //   REPORT_COUNT (8)
+    0x95, 0x0C,                    //   REPORT_COUNT (12)
     0x81, 0x02,                    //   INPUT (Data,Var,Abs)
 
-    /***************** Place holder for 120 buttons *******************/
-    0x75, 0x78,                    //   REPORT_SIZE (120)
+    /***************** Place holder for 116 buttons *******************/
+    0x75, 0x74,                    //   REPORT_SIZE (116)
     0x95, 0x01,                    //   REPORT_COUNT (1)
     0x81, 0x01,                    //   INPUT (Cnst,Ary,Abs)
 
@@ -647,7 +662,7 @@
             0x09, HID_USAGE_DMPR,    //    Usage ET Damper
             0x09, HID_USAGE_INRT,    //    Usage ET Inertia
             0x09, HID_USAGE_FRIC,    //    Usage ET Friction
-            //0x09, HID_USAGE_CUSTM,   //    Usage ET Custom Force Data
+            0x09, HID_USAGE_CUSTM,   //    Usage ET Custom Force Data
             0x09, HID_USAGE_RESERVD, //    Usage ET RESERVED
            0x15,0x01,    //    Logical Minimum 1
            0x25,0x0C,    //    Logical Maximum Ch (12d)

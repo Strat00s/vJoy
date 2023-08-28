@@ -15,22 +15,16 @@
 *.suo
 *.user
 
-/apps/vJoyFeeder/vJoyFeeder01.vcxproj
-
 # Folders
 win32/
-x64/
 release/
 debug/
 vlwciwos.lhj.txt
 ipch/
 .vs/
-
+./x64
 install/vJoySetup.exe
 Test-vXboxInterface/unittest1.cpp
-apps/common/vJoyInterface/RCa14412
-apps/common/vJoyInterface/RCb14412
-apps/common/vJoyInterface/Test-vXboxInterface/ReadMe.txt
 apps/vJoyConf/gen-versioninfo.h
 apps/vJoyConf/vJoyConfig/gen-versioninfo.h
 apps/vJoyInstall/gen-versioninfo.h
@@ -40,7 +34,6 @@ install/install-Base.ico
 apps/FfbMon/gen-versioninfo.h
 apps/common/vJoyInterface/gen-versioninfo.h
 apps/vJoyFeeder/gen-versioninfo.h
-apps/common/vJoyInterface/RCa08136
 apps/common/vJoyInterface/vJoyInterface-Static/ReadMe.txt
 driver/sys/RCa12040
 *.opendb
@@ -74,9 +67,9 @@ apps/common/vJoyInterfaceStat/gen-versioninfo.h
 driver/sys/gen-versioninfo.h
 apps/vJoyInstall/CmdLine/gen-versioninfo.h
 driver/Package/gen-versioninfo.h
-SDK/ReadMe-2.1.5.odt
 apps/vJoyList/gen-versioninfo.h
 SDK.zip
 SDK/ReadMe.pdf
 SDK/c#/ReadMe.pdf
 apps/vJoyConf/vJoyConf.aps
+/apps/vJoyConf/version.aps

@@ -512,7 +512,7 @@ Return Value:
             status = WdfRequestForwardToIoQueue(Request, pDevContext->FfbReadQ[id - 1]);
             if (!NT_SUCCESS(status)) {
                 TraceEvents(TRACE_LEVEL_ERROR, DBG_IOCTL,
-                    "vJoy_EvtIoDeviceControlForRawPdo[GET_FFB_DATA]: WdfRequestForwardToIoQueue (FfbWriteQ[%d]) failed with status: 0x%x\n", id - 1, status);
+                            "vJoy_EvtIoDeviceControlForRawPdo[GET_FFB_DATA]: WdfRequestForwardToIoQueue (FfbWriteQ[%d]) failed with status: 0x%x\n", id - 1, status);
                 WdfRequestComplete(Request, status);
             }
             return;
@@ -719,6 +719,7 @@ Return Value:
             WdfRequestCompleteWithInformation(Request, status, bytesReturned);
             TraceEvents(TRACE_LEVEL_VERBOSE, DBG_IOCTL, "vJoy_EvtIoDeviceControlForRawPdo: GenBuffer[0]=%d\n", ((BYTE*)GenBuffer)[0]);
             return;
+
         case RESET_DEV:
             /* Resets device(s) to predefined values */
             TraceEvents(TRACE_LEVEL_INFORMATION, DBG_IOCTL, "vJoy_EvtIoDeviceControlForRawPdo: Case RESET_DEV\n");
@@ -836,7 +837,7 @@ Return Value:
     // TODO: Assign correct SDDL
     ////
     status = WdfDeviceInitAssignSDDLString(pDeviceInit,
-        &SDDL_DEVOBJ_SYS_ALL_ADM_RWX_WORLD_RWX_RES_R);
+                                           &SDDL_DEVOBJ_SYS_ALL_ADM_RWX_WORLD_RWX_RES_R);
     if (!NT_SUCCESS(status)) {
         LogEventWithStatus(ERRLOG_RAW_DEV_FAILED, L"WdfDeviceInitAssignSDDLString", WdfDriverWdmGetDriverObject(WdfGetDriver()), status);
         goto Cleanup;
@@ -893,9 +894,9 @@ Return Value:
     // WdfPdoInitSetDefaultLocale.
     //
     status = WdfPdoInitAddDeviceText(pDeviceInit,
-        &buffer,
-        &deviceLocation,
-        0x409 // English - United States
+                                     &buffer,
+                                     &deviceLocation,
+                                     0x409 // English - United States
     );
     if (!NT_SUCCESS(status)) {
         LogEventWithStatus(ERRLOG_RAW_DEV_FAILED, L"WdfPdoInitAddDeviceText (1)", WdfDriverWdmGetDriverObject(WdfGetDriver()), status);
@@ -911,9 +912,9 @@ Return Value:
     }
 
     status = WdfPdoInitAddDeviceText(pDeviceInit,
-        &buffer,
-        &deviceLocation,
-        0x40D // Hebrew
+                                     &buffer,
+                                     &deviceLocation,
+                                     0x40D // Hebrew
     );
     if (!NT_SUCCESS(status)) {
         LogEventWithStatus(ERRLOG_RAW_DEV_FAILED, L"WdfPdoInitAddDeviceText (2)", WdfDriverWdmGetDriverObject(WdfGetDriver()), status);
@@ -978,14 +979,14 @@ Return Value:
     //
 
     WDF_IO_QUEUE_CONFIG_INIT_DEFAULT_QUEUE(&ioQueueConfig,
-        WdfIoQueueDispatchSequential);
+                                           WdfIoQueueDispatchSequential);
 
     ioQueueConfig.EvtIoDeviceControl = vJoy_EvtIoDeviceControlForRawPdo;
 
     status = WdfIoQueueCreate(RawPdoDevice,
-        &ioQueueConfig,
-        WDF_NO_OBJECT_ATTRIBUTES,
-        &queue // pointer to default queue
+                              &ioQueueConfig,
+                              WDF_NO_OBJECT_ATTRIBUTES,
+                              &queue // pointer to default queue
     );
     if (!NT_SUCCESS(status)) {
         TraceEvents(TRACE_LEVEL_ERROR, DBG_INIT, "WdfIoQueueCreate failed 0x%x\n", status);

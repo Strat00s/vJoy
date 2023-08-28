@@ -656,21 +656,21 @@ namespace vJoyDemo {
         Report.wAxisX = (USHORT)ConvAbsolute(this->trackBarX->Value, AxisXmax, AxisXmin);
         Report.wAxisY = (USHORT)ConvAbsolute(this->trackBarY->Value, AxisYmax, AxisYmin);
         Report.wAxisZ = (USHORT)ConvAbsolute(this->trackBarZ->Value, AxisZmax, AxisZmin);
-        Report.wAxisXRot = (USHORT)this->trackBarRx->Value;
-        Report.wAxisYRot = (USHORT)this->trackBarRy->Value;
-        Report.wAxisZRot = (USHORT)this->trackBarRz->Value;
-        Report.wSlider = (USHORT)this->trackBarSL0->Value;
-        Report.wDial = (USHORT)this->trackBarSL1->Value;
+        Report.wAxisXRot = (USHORT)ConvAbsolute(this->trackBarRx->Value, AxisRXmax, AxisRXmin);
+        Report.wAxisYRot = (USHORT)ConvAbsolute(this->trackBarRy->Value, AxisRYmax, AxisRYmin);
+        Report.wAxisZRot = (USHORT)ConvAbsolute(this->trackBarRz->Value, AxisRZmax, AxisRZmin);
+        Report.wSlider = (USHORT)ConvAbsolute(this->trackBarSL0->Value, AxisSL0max, AxisSL0min);
+        Report.wDial = (USHORT)ConvAbsolute(this->trackBarSL1->Value, AxisSL1max, AxisSL1min);
 
-        Report.wWheel = (USHORT)this->trackBarWheel->Value;
-        Report.wAccelerator = (USHORT)this->trackBarAccelerator->Value;
-        Report.wBrake = (USHORT)this->trackBarBrake->Value;
-        Report.wClutch = (USHORT)this->trackBarClutch->Value;
-        Report.wSteering = (USHORT)this->trackBarSteering->Value;
+        Report.wWheel = (USHORT)ConvAbsolute(this->trackBarWheel->Value, AxisWheelmax, AxisWheelmin);
+        Report.wAccelerator = (USHORT)ConvAbsolute(this->trackBarAccelerator->Value, AxisAcceleratormax, AxisAcceleratormin);
+        Report.wBrake = (USHORT)ConvAbsolute(this->trackBarBrake->Value, AxisBrakemax, AxisBrakemin);
+        Report.wClutch = (USHORT)ConvAbsolute(this->trackBarClutch->Value, AxisClutchmax, AxisClutchmin);
+        Report.wSteering = (USHORT)ConvAbsolute(this->trackBarSteering->Value, AxisSteeringmax, AxisSteeringmin);
 
-        Report.wAileron = (USHORT)this->trackBarWheel->Value;
-        Report.wRudder = (USHORT)this->trackBarWheel->Value;
-        Report.wThrottle = (USHORT)this->trackBarWheel->Value;
+        Report.wAileron = (USHORT)ConvAbsolute(this->trackBarWheel->Value, AxisAileronmax, AxisAileronmin);
+        Report.wRudder = (USHORT)ConvAbsolute(this->trackBarWheel->Value, AxisRuddermax, AxisRuddermin);
+        Report.wThrottle = (USHORT)ConvAbsolute(this->trackBarWheel->Value, AxisThrottlemax, AxisThrottlemin);
 
         Report.wAxisVBRX = 0;
         Report.wAxisVBRY = 0;
@@ -1134,9 +1134,9 @@ namespace vJoyDemo {
                this->label1->AutoSize = true;
                this->label1->Location = System::Drawing::Point(49, 154);
                this->label1->Name = L"label1";
-               this->label1->Size = System::Drawing::Size(74, 13);
+               this->label1->Size = System::Drawing::Size(68, 13);
                this->label1->TabIndex = 4;
-               this->label1->Text = L"1/100 Degree";
+               this->label1->Text = L"1/10 Degree";
                // 
                // labelPOVcont
                // 
@@ -1176,9 +1176,9 @@ namespace vJoyDemo {
                this->LableKnobPov1->AutoSize = true;
                this->LableKnobPov1->Location = System::Drawing::Point(6, 155);
                this->LableKnobPov1->Name = L"LableKnobPov1";
-               this->LableKnobPov1->Size = System::Drawing::Size(37, 13);
+               this->LableKnobPov1->Size = System::Drawing::Size(31, 13);
                this->LableKnobPov1->TabIndex = 0;
-               this->LableKnobPov1->Text = L"00000";
+               this->LableKnobPov1->Text = L"0000";
                // 
                // lbKnob1
                // 
@@ -1187,12 +1187,12 @@ namespace vJoyDemo {
                this->lbKnob1->IndicatorOffset = 5;
                this->lbKnob1->KnobColor = System::Drawing::Color::Maroon;
                this->lbKnob1->Location = System::Drawing::Point(12, 57);
-               this->lbKnob1->MaxValue = 35999;
+               this->lbKnob1->MaxValue = 3599;
                this->lbKnob1->MinValue = 0;
                this->lbKnob1->Name = L"lbKnob1";
                this->lbKnob1->Renderer = nullptr;
                this->lbKnob1->ScaleColor = System::Drawing::Color::FromArgb(static_cast<System::Int32>(static_cast<System::Byte>(255)), static_cast<System::Int32>(static_cast<System::Byte>(192)),
-                   static_cast<System::Int32>(static_cast<System::Byte>(192)));
+                                                                            static_cast<System::Int32>(static_cast<System::Byte>(192)));
                this->lbKnob1->Size = System::Drawing::Size(96, 90);
                this->lbKnob1->StepValue = 10;
                this->lbKnob1->Style = LBSoft::IndustrialCtrls::Knobs::LBKnob::KnobStyle::Circular;
@@ -2476,8 +2476,8 @@ namespace vJoyDemo {
         // Covert to absolute value from a number in the range 0-100
         if (max==min)
             return 0;
-
-        return val*(max-min)/100+min+1;
+        
+        return val*(max-min)/100+min;
     }
 
     private: System::Void WatchDog_Tick(System::Object^ sender, System::EventArgs^ e) {
@@ -2497,6 +2497,7 @@ namespace vJoyDemo {
                     break;
                 case VJD_STAT_OWN:
                     Acquired = true;
+                    update_to_vjoy();
                     break;
                 case VJD_STAT_UNKN:
                 case VJD_STAT_MISS:

@@ -144,10 +144,10 @@ namespace vJoyInterfaceWrap
             public Int32 AxisVY;
 
             public UInt32 Buttons;
-            public UInt32 bHats;	// Lower 4 bits: HAT switch or 16-bit of continuous HAT switch
-            public UInt32 bHatsEx1;	// Lower 4 bits: HAT switch or 16-bit of continuous HAT switch
-            public UInt32 bHatsEx2;	// Lower 4 bits: HAT switch or 16-bit of continuous HAT switch
-            public UInt32 bHatsEx3;	// Lower 4 bits: HAT switch or 16-bit of continuous HAT switch
+            public UInt32 bHats;	// Lower 4 bits: HAT switch or 16-bit of continuous HAT switch (0->3599)
+            public UInt32 bHatsEx1;	// Lower 4 bits: HAT switch or 16-bit of continuous HAT switch (0->3599)
+            public UInt32 bHatsEx2;	// Lower 4 bits: HAT switch or 16-bit of continuous HAT switch (0->3599)
+            public UInt32 bHatsEx3;	// Lower 4 bits: HAT switch or 16-bit of continuous HAT switch (0->3599)
 
             public UInt32 ButtonsEx1;
             public UInt32 ButtonsEx2;

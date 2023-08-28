@@ -5,7 +5,7 @@
 // You can compile it with either #define ROBUST OR #define EFFICIENT
 // The fuctionality is similar - 
 // The ROBUST section demonstrate the usage of functions that are easy and safe to use but are less efficient
-// The EFFICIENT ection demonstrate the usage of functions that are more efficient
+// The EFFICIENT section demonstrate the usage of functions that are more efficient
 //
 // Functionality:
 //	The program starts with creating one joystick object. 
@@ -125,7 +125,7 @@ namespace FeederDemoCS
 
             /////// Packet Device ID, and Type Block Index (if exists)
             #region Packet Device ID, and Type Block Index
-            
+
 
             uint DeviceID = 0, BlockIndex = 0;
             FFBPType Type = new FFBPType();
@@ -524,7 +524,7 @@ namespace FeederDemoCS
             return stat;
         }
 
-        // Polar values (0x00-0xFF) to Degrees (0-360)
+        // Polar values (0x00-0x7FFF) to Degrees (0-360)
         public static int Polar2Deg(UInt16 Polar)
         {
             return (int)((long)Polar * 360) / 32767;
@@ -642,7 +642,9 @@ namespace FeederDemoCS
             bool AxisY = joystick.GetVJDAxisExist(id, HID_USAGES.HID_USAGE_Y);
             bool AxisZ = joystick.GetVJDAxisExist(id, HID_USAGES.HID_USAGE_Z);
             bool AxisRX = joystick.GetVJDAxisExist(id, HID_USAGES.HID_USAGE_RX);
+            bool AxisRY = joystick.GetVJDAxisExist(id, HID_USAGES.HID_USAGE_RY);
             bool AxisRZ = joystick.GetVJDAxisExist(id, HID_USAGES.HID_USAGE_RZ);
+
             // Get the number of buttons and POV Hat switchessupported by this vJoy device
             int nButtons = joystick.GetVJDButtonNumber(id);
             int ContPovNumber = joystick.GetVJDContPovNumber(id);
@@ -657,6 +659,7 @@ namespace FeederDemoCS
             Console.WriteLine("Axis Y\t\t{0}", AxisX ? "Yes" : "No");
             Console.WriteLine("Axis Z\t\t{0}", AxisX ? "Yes" : "No");
             Console.WriteLine("Axis Rx\t\t{0}", AxisRX ? "Yes" : "No");
+            Console.WriteLine("Axis Ry\t\t{0}", AxisRY ? "Yes" : "No");
             Console.WriteLine("Axis Rz\t\t{0}", AxisRZ ? "Yes" : "No");
 
             // Test if DLL matches the driver
@@ -680,7 +683,7 @@ namespace FeederDemoCS
             Console.WriteLine("\npress enter to stat feeding");
             Console.ReadKey(true);
 
-            int X, Y, Z, ZR, XR;
+            int X, Y, Z, XR, YR, ZR;
             uint count = 0;
             long maxval = 0;
 
@@ -688,6 +691,7 @@ namespace FeederDemoCS
             Y = 30;
             Z = 40;
             XR = 60;
+            YR = 70;
             ZR = 80;
 
             joystick.GetVJDAxisMax(id, HID_USAGES.HID_USAGE_X, ref maxval);
@@ -696,6 +700,7 @@ namespace FeederDemoCS
             bool res;
             // Reset this device to default values
             joystick.ResetVJD(id);
+            joystick.ResetButtons(id);
 
             // Feed the device in endless loop
             while (true) {
@@ -704,20 +709,22 @@ namespace FeederDemoCS
                 res = joystick.SetAxis(Y, id, HID_USAGES.HID_USAGE_Y);
                 res = joystick.SetAxis(Z, id, HID_USAGES.HID_USAGE_Z);
                 res = joystick.SetAxis(XR, id, HID_USAGES.HID_USAGE_RX);
+                res = joystick.SetAxis(YR, id, HID_USAGES.HID_USAGE_RY);
                 res = joystick.SetAxis(ZR, id, HID_USAGES.HID_USAGE_RZ);
 
                 // Press/Release Buttons
+                res = joystick.SetBtn(false, id, count / 50 - 1);
                 res = joystick.SetBtn(true, id, count / 50);
-                res = joystick.SetBtn(false, id, 1 + count / 50);
 
                 // If Continuous POV hat switches installed - make them go round
                 // For high values - put the switches in neutral state
                 if (ContPovNumber>0) {
-                    if ((count * 70) < 30000) {
+                    // Unit are 1/10th of a degree : 0->3599
+                    if ((count * 70) < 3600) {
                         res = joystick.SetContPov(((int)count * 70), id, 1);
-                        res = joystick.SetContPov(((int)count * 70) + 2000, id, 2);
-                        res = joystick.SetContPov(((int)count * 70) + 4000, id, 3);
-                        res = joystick.SetContPov(((int)count * 70) + 6000, id, 4);
+                        res = joystick.SetContPov(((int)count * 70) + 200, id, 2);
+                        res = joystick.SetContPov(((int)count * 70) + 400, id, 3);
+                        res = joystick.SetContPov(((int)count * 70) + 600, id, 4);
                     } else {
                         res = joystick.SetContPov(-1, id, 1);
                         res = joystick.SetContPov(-1, id, 2);
@@ -747,6 +754,7 @@ namespace FeederDemoCS
                 Y += 250; if (Y > maxval) Y = 0;
                 Z += 350; if (Z > maxval) Z = 0;
                 XR += 220; if (XR > maxval) XR = 0;
+                YR += 210; if (YR > maxval) YR = 0;
                 ZR += 200; if (ZR > maxval) ZR = 0;
                 count++;
 
@@ -760,66 +768,62 @@ namespace FeederDemoCS
 
             byte[] pov = new byte[4];
 
-      while (true)
-            {
-            iReport.bDevice = (byte)id;
-            iReport.AxisX = X;
-            iReport.AxisY = Y;
-            iReport.AxisZ = Z;
-            iReport.AxisZRot = ZR;
-            iReport.AxisXRot = XR;
+            while (true) {
+                iReport.bDevice = (byte)id;
+                iReport.AxisX = X;
+                iReport.AxisY = Y;
+                iReport.AxisZ = Z;
+                iReport.AxisXRot = XR;
+                iReport.AxisYRot = YR;
+                iReport.AxisZRot = ZR;
 
-            // Set buttons one by one
-            iReport.Buttons = (uint)(0x1 <<  (int)(count / 20));
+                // Set buttons one by one
+                iReport.Buttons = (uint)(0x1 <<  (int)(count / 20));
 
-        if (ContPovNumber>0)
-        {
-            // Make Continuous POV Hat spin
-            iReport.bHats		= (count*70);
-            iReport.bHatsEx1	= (count*70)+3000;
-            iReport.bHatsEx2	= (count*70)+5000;
-            iReport.bHatsEx3	= 15000 - (count*70);
-            if ((count*70) > 36000)
-            {
-                iReport.bHats =    0xFFFFFFFF; // Neutral state
-                iReport.bHatsEx1 = 0xFFFFFFFF; // Neutral state
-                iReport.bHatsEx2 = 0xFFFFFFFF; // Neutral state
-                iReport.bHatsEx3 = 0xFFFFFFFF; // Neutral state
-            };
-        }
-        else
-        {
-            // Make 5-position POV Hat spin
-            
-            pov[0] = (byte)(((count / 20) + 0)%4);
-            pov[1] = (byte)(((count / 20) + 1) % 4);
-            pov[2] = (byte)(((count / 20) + 2) % 4);
-            pov[3] = (byte)(((count / 20) + 3) % 4);
+                if (ContPovNumber>0) {
+                    // Make Continuous POV Hat spin
+                    iReport.bHats       = (count*70);
+                    iReport.bHatsEx1    = (count*70)+300;
+                    iReport.bHatsEx2    = (count*70)+500;
+                    iReport.bHatsEx3    = 1500 - (count*70);
+                    if ((count*70) > 3600) {
+                        iReport.bHats =    0xFFFFFFFF; // Neutral state
+                        iReport.bHatsEx1 = 0xFFFFFFFF; // Neutral state
+                        iReport.bHatsEx2 = 0xFFFFFFFF; // Neutral state
+                        iReport.bHatsEx3 = 0xFFFFFFFF; // Neutral state
+                    };
+                } else {
+                    // Make 5-position POV Hat spin
 
-            iReport.bHats		= (uint)(pov[3]<<12) | (uint)(pov[2]<<8) | (uint)(pov[1]<<4) | (uint)pov[0];
-            if ((count) > 550)
-                iReport.bHats = 0xFFFFFFFF; // Neutral state
-        };
+                    pov[0] = (byte)(((count / 20) + 0)%4);
+                    pov[1] = (byte)(((count / 20) + 1) % 4);
+                    pov[2] = (byte)(((count / 20) + 2) % 4);
+                    pov[3] = (byte)(((count / 20) + 3) % 4);
 
-        /*** Feed the driver with the position packet - is fails then wait for input then try to re-acquire device ***/
-        if (!joystick.UpdateVJD(id, ref iReport))
-        {
-            Console.WriteLine("Feeding vJoy device number {0} failed - try to enable device then press enter\n", id);
-            Console.ReadKey(true);
-            joystick.AcquireVJD(id);
-        }
+                    iReport.bHats       = (uint)(pov[3]<<12) | (uint)(pov[2]<<8) | (uint)(pov[1]<<4) | (uint)pov[0];
+                    if ((count) > 550)
+                        iReport.bHats = 0xFFFFFFFF; // Neutral state
+                };
 
-        System.Threading.Thread.Sleep(20);
-        count++;
-        if (count > 640) count = 0;
+                /*** Feed the driver with the position packet - is fails then wait for input then try to re-acquire device ***/
+                if (!joystick.UpdateVJD(id, ref iReport)) {
+                    Console.WriteLine("Feeding vJoy device number {0} failed - try to enable device then press enter\n", id);
+                    Console.ReadKey(true);
+                    joystick.AcquireVJD(id);
+                }
 
-        X += 150; if (X > maxval) X = 0;
-        Y += 250; if (Y > maxval) Y = 0;
-        Z += 350; if (Z > maxval) Z = 0;
-        XR += 220; if (XR > maxval) XR = 0;
-        ZR += 200; if (ZR > maxval) ZR = 0;  
-         
-      }; // While
+                System.Threading.Thread.Sleep(20);
+                count++;
+                if (count > 640) count = 0;
+
+                X += 150; if (X > maxval) X = 0;
+                Y += 250; if (Y > maxval) Y = 0;
+                Z += 350; if (Z > maxval) Z = 0;
+                XR += 220; if (XR > maxval) XR = 0;
+                YR += 210; if (YR > maxval) YR = 0;
+                ZR += 200; if (ZR > maxval) ZR = 0;
+
+            }; // While
 
 #endif // EFFICIENT
 

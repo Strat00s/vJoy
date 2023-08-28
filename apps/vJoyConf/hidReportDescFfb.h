@@ -75,9 +75,9 @@ std::vector<std::vector<BYTE>>  FfbDescriptor = { {
         0x85, },{ static_cast<BYTE>(HID_ID_EFFREP + 0x10 * TLID),    //    Report ID 1
         0x09, 0x22,    //    Usage Effect Block Index
         0x15, 0x01,    //    Logical Minimum 1
-        0x25, VJOY_FFB_MAX_EFFECTS_BLOCK_INDEX,    //    Logical Maximum 80h (128d)
+        0x25, VJOY_FFB_MAX_EFFECTS_BLOCK_INDEX,    //    Logical Maximum 64h (100d)
         0x35, 0x01,    //    Physical Minimum 1
-        0x45, VJOY_FFB_MAX_EFFECTS_BLOCK_INDEX,    //    Physical Maximum 80h (128d)
+        0x45, VJOY_FFB_MAX_EFFECTS_BLOCK_INDEX,    //    Physical Maximum 64h (100d)
         0x75, 0x08,    //    Report Size 8
         0x95, 0x01,    //    Report Count 1
         0x91, 0x02,    //    Output (Variable)
@@ -95,12 +95,12 @@ std::vector<std::vector<BYTE>>  FfbDescriptor = { {
             0x09, HID_USAGE_DMPR,    //    Usage ET Damper
             0x09, HID_USAGE_INRT,    //    Usage ET Inertia
             0x09, HID_USAGE_FRIC,    //    Usage ET Friction
-            //0x09, HID_USAGE_CUSTM,   //    Usage ET Custom Force Data
+            0x09, HID_USAGE_CUSTM,   //    Usage ET Custom Force Data
             0x09, HID_USAGE_RESERVD, //    Usage ET RESERVED
-            0x25, 0x0C,    //    Logical Maximum Ch (12d)
+            0x25, 0x0D,    //    Logical Maximum Ch (13d)
             0x15, 0x01,    //    Logical Minimum 1
             0x35, 0x01,    //    Physical Minimum 1
-            0x45, 0x0C,    //    Physical Maximum Ch (12d)
+            0x45, 0x0D,    //    Physical Maximum Ch (13d)
             0x75, 0x08,    //    Report Size 8
             0x95, 0x01,    //    Report Count 1
             0x91, 0x00,    //    Output
@@ -140,12 +140,12 @@ std::vector<std::vector<BYTE>>  FfbDescriptor = { {
         0x95, 0x01,         //    Report Count 1
         0x91, 0x02,         //    Output (Variable)
 
-        0x09, 0x55,       //    Usage Axes Enable
-        0xA1, 0x02,       //    Collection Datalink
-            0x05, 0x01,    //    Usage Page Generic Desktop
+        0x09, 0x55,         //    Usage Axes Enable
+        0xA1, 0x02,         //    Collection (Logical)
+            0x05, 0x01,     //    Usage Page Generic Desktop
             0x09, 0x30,    //    Usage X
 #if FFB_USE_XY_AXES>1
-           // If only 1 FFB axis, skip this
+            // If only 1 FFB axis, skip this
             0x09, 0x31,    //    Usage Y
 #endif
             0x15, 0x00,    //    Logical Minimum 0
@@ -154,40 +154,35 @@ std::vector<std::vector<BYTE>>  FfbDescriptor = { {
             // 0x95,0x02,    //    Report Count 2
             0x95, FFB_USE_XY_AXES,   // Report Count = (FFB_USE_XY_AXES)
             0x91, 0x02,    //    Output (Variable)
-        0xC0,    // End Collection
-
+        0xC0,    // End Collection (Logical)
+        
         0x05, 0x0F,    //    Usage Page Physical Interface
         0x09, 0x56,    //    Usage Direction Enable
         0x95, 0x01,    //    Report Count 1
         0x91, 0x02,    //    Output (Variable)
-
-        // 0x95,0x05,    //    Report Count 5
+        
         0x95, 0x07-FFB_USE_XY_AXES,    // Report Count (05 (2 axes) or 06 (1 axes)) seems to be for padding
         0x91, 0x03,    //    Output (Constant, Variable)
 
         0x09, 0x57,    //    Usage Direction
-        0xA1, 0x02,    //    Collection Datalink
+        0xA1, 0x02,    //    Collection (Logical)
             0x0B, 0x01, 0x00, 0x0A, 0x00, //    Usage Ordinals: Instance 1
             0x0B, 0x02, 0x00, 0x0A, 0x00, //    Usage Ordinals: Instance 2
             0x66, 0x14, 0x00,             //    Unit 14h (20d) (Eng Rot:Angular Pos)
-                0x55, 0xFE,                   //    Unit Exponent FEh (254d)
+                0x55, 0xFE,                   //    Unit Exponent FEh (-2d)
                     0x15, 0x00,                   //    Logical Minimum 0
                     //0x26, 0xFF, 0x00,             //    Logical Maximum FFh (255d)
                     0x27, 0xFF, 0x7F, 0x00, 0x00, //    Logical Maximum 7Fffh (32767d)
                     0x35, 0x00,                   //    Physical Minimum 0
                     0x47, 0xA0, 0x8C, 0x00, 0x00, //    Physical Maximum 8CA0h (36000d)
                     0x66, 0x00, 0x00,             //    Unit 0
-                    //0x75, 0x08,                   //    Report Size 8
-#ifdef VJOY_FORCE_WRONG_FFB_HID
-                    0x75, 0x08,                   //    Report Size 08d - WRONG IF 7FFFh above
-#else
                     0x75, 0x10,                   //    Report Size 16d
-#endif
-                    0x95, 0x02,                   //    Report Count 2
+                    0x95, 0x01,                   //    Report Count 2
                     0x91, 0x02,                   //    Output (Variable)
                 0x55, 0x00,                   //    Unit Exponent 0
             0x66, 0x00, 0x00,             //    Unit 0
-        0xC0,                         //    End Collection
+        0xC0,              //    End Collection (Logical)
+
 
         0x05, 0x0F,        //     USAGE_PAGE (Physical Interface)
         0x09, 0x58,        //     USAGE (Type Specific Block Offset)
@@ -207,9 +202,9 @@ std::vector<std::vector<BYTE>>  FfbDescriptor = { {
         0x85, }, { static_cast<BYTE>(HID_ID_ENVREP + 0x10 * TLID),         //    Report ID 2
         0x09, 0x22,         //    Usage Effect Block Index
         0x15, 0x01,         //    Logical Minimum 1
-        0x25, VJOY_FFB_MAX_EFFECTS_BLOCK_INDEX,         //    Logical Maximum 80h (128d)
+        0x25, VJOY_FFB_MAX_EFFECTS_BLOCK_INDEX,         //    Logical Maximum 64h (100d)
         0x35, 0x01,         //    Physical Minimum 1
-        0x45, VJOY_FFB_MAX_EFFECTS_BLOCK_INDEX,         //    Physical Maximum 80h (128d)
+        0x45, VJOY_FFB_MAX_EFFECTS_BLOCK_INDEX,         //    Physical Maximum 64h (100d)
         0x75, 0x08,         //    Report Size 8
         0x95, 0x01,         //    Report Count 1
         0x91, 0x02,         //    Output (Variable)
@@ -576,10 +571,10 @@ std::vector<std::vector<BYTE>>  FfbDescriptor = { {
             0x09, HID_USAGE_FRIC,    //    Usage ET Friction
             0x09, HID_USAGE_CUSTM,   //    Usage ET Custom Force Data
             0x09, HID_USAGE_RESERVD, //    Usage ET RESERVED
-            0x25, 0x0C,    //    Logical Maximum Ch (12d)
+            0x25, 0x0D,    //    Logical Maximum Ch (13d)
             0x15, 0x01,    //    Logical Minimum 1
             0x35, 0x01,    //    Physical Minimum 1
-            0x45, 0x0C,    //    Physical Maximum Ch (12d)
+            0x45, 0x0D,    //    Physical Maximum Ch (13d)
             0x75, 0x08,    //    Report Size 8
             0x95, 0x01,    //    Report Count 1
             0xB1, 0x00,    //    Feature

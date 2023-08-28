@@ -1209,34 +1209,36 @@ typedef PDEVICE_POSITION_V2 PDEVICE_POSITION;
 #elif USE_JOYSTICK_API_VERSION == 3
 
 // Now manages 16 axes
+// Must follow HID memory descriptor
 typedef struct _HID_INPUT_REPORT {
     union {
         struct _InputReport {
             UCHAR   CollectionId;
 
-            LONG    bAxisX;
-            LONG	bAxisY;
-            LONG	bAxisZ;
-            LONG	bAxisRX;
-            LONG	bAxisRY;
-            LONG	bAxisRZ;
-            LONG	bSlider;
-            LONG	bDial;
+            USHORT  bAxisX;
+            USHORT	bAxisY;
+            USHORT	bAxisZ;
+            USHORT	bAxisRX;
+            USHORT	bAxisRY;
+            USHORT	bAxisRZ;
+            USHORT	bSlider;
+            USHORT	bDial;
 
-            LONG	bWheel;
-            LONG	bAccelerator;
-            LONG	bBrake;
-            LONG	bClutch;
-            LONG	bSteering;
+            USHORT	bWheel;
+            USHORT	bAccelerator;
+            USHORT	bBrake;
+            USHORT	bClutch;
+            USHORT	bSteering;
 
-            LONG	bAileron;
-            LONG	bRudder;
-            LONG	bThrottle;
+            USHORT	bAileron;
+            USHORT	bRudder;
+            USHORT	bThrottle;
 
-            DWORD	bHats;		// 4 HATs, 4bit each OR one 16-bit continuous HAT
-            DWORD	bHatsEx1;	// Extra 16-bit continuous HAT
-            DWORD	bHatsEx2;	// Extra 16-bit continuous HAT
-            DWORD	bHatsEx3;	// Extra 16-bit continuous HAT
+            USHORT	bHats;		// 4 HATs, 4bit each OR one 16-bit continuous HAT
+            USHORT	bHatsEx1;	// Extra 16-bit continuous HAT
+            USHORT	bHatsEx2;	// Extra 16-bit continuous HAT
+            USHORT	bHatsEx3;	// Extra 16-bit continuous HAT
+
             ULONG	bButtons;	// 32 Buttons
             // Higher buttons
             ULONG	bButtonsEx1;	// Buttons 33-64
@@ -1249,6 +1251,7 @@ typedef struct _HID_INPUT_REPORT {
 typedef HID_INPUT_REPORT_V3 HID_INPUT_REPORT;
 typedef PHID_INPUT_REPORT_V3 PHID_INPUT_REPORT;
 
+// For driver IOctl and vJoyInterface.dll
 typedef struct _DEVICE_POSITION_V3 {
     LONG	ValX;
     LONG	ValY;
