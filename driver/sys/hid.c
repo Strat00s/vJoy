@@ -2098,22 +2098,22 @@ void ResetDeviceControls(int id, PDEVICE_EXTENSION devContext, PDEVICE_INIT_VALS
     if (pdata_buf->InitValPov[0] == -1)
         devContext->positions[index]->ValHats = (DWORD)-1;
     else
-        devContext->positions[index]->ValHats = pdata_buf->InitValPov[0] * 35999 / 100;
+        devContext->positions[index]->ValHats = pdata_buf->InitValPov[0] * 3599 / 100;
 
     if (pdata_buf->InitValPov[1] == -1)
         devContext->positions[index]->ValHatsEx1 = (DWORD)-1;
     else
-        devContext->positions[index]->ValHatsEx1 = pdata_buf->InitValPov[1] * 35999 / 100;
+        devContext->positions[index]->ValHatsEx1 = pdata_buf->InitValPov[1] * 3599 / 100;
 
     if (pdata_buf->InitValPov[2] == -1)
         devContext->positions[index]->ValHatsEx2 = (DWORD)-1;
     else
-        devContext->positions[index]->ValHatsEx2 = pdata_buf->InitValPov[2] * 35999 / 100;
+        devContext->positions[index]->ValHatsEx2 = pdata_buf->InitValPov[2] * 3599 / 100;
 
     if (pdata_buf->InitValPov[3] == -1)
         devContext->positions[index]->ValHatsEx3 = (DWORD)-1;
     else
-        devContext->positions[index]->ValHatsEx3 = pdata_buf->InitValPov[3] * 35999 / 100;
+        devContext->positions[index]->ValHatsEx3 = pdata_buf->InitValPov[3] * 3599 / 100;
 
     devContext->positions[index]->ValButtons = ((DWORD*)(pdata_buf->ButtonMask))[0];
     devContext->positions[index]->ValButtonsEx1 = ((DWORD*)(pdata_buf->ButtonMask))[1];
@@ -2228,22 +2228,22 @@ void InitializeDev(PDEVICE_EXTENSION devContext, USHORT Mask, USHORT FFBMask, BO
             if (data_buf.InitValPov[0] == -1)
                 devContext->positions[index]->ValHats = (DWORD)-1;
             else
-                devContext->positions[index]->ValHats = data_buf.InitValPov[0] * 35999 / 100;
+                devContext->positions[index]->ValHats = data_buf.InitValPov[0] * 3599 / 100;
 
             if (data_buf.InitValPov[1] == -1)
                 devContext->positions[index]->ValHatsEx1 = (DWORD)-1;
             else
-                devContext->positions[index]->ValHatsEx1 = data_buf.InitValPov[1] * 35999 / 100;
+                devContext->positions[index]->ValHatsEx1 = data_buf.InitValPov[1] * 3599 / 100;
 
             if (data_buf.InitValPov[2] == -1)
                 devContext->positions[index]->ValHatsEx2 = (DWORD)-1;
             else
-                devContext->positions[index]->ValHatsEx2 = data_buf.InitValPov[2] * 35999 / 100;
+                devContext->positions[index]->ValHatsEx2 = data_buf.InitValPov[2] * 3599 / 100;
 
             if (data_buf.InitValPov[3] == -1)
                 devContext->positions[index]->ValHatsEx3 = (DWORD)-1;
             else
-                devContext->positions[index]->ValHatsEx3 = data_buf.InitValPov[3] * 35999 / 100;
+                devContext->positions[index]->ValHatsEx3 = data_buf.InitValPov[3] * 3599 / 100;
         };
 
         devContext->positions[index]->ValButtons = ((DWORD*)(data_buf.ButtonMask))[0];

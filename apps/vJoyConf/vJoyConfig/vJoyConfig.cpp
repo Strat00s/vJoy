@@ -661,17 +661,16 @@ int CreateHidReportDesc(void** data, UINT nButtons, bool* axes, int nPovHatsCont
         NEXT_BYTE(buffer, 0x01);
     } else if (nPovHatsCont) {
         // Continuous POV
-        // Continuous POV
+        //NEXT_BYTE(buffer, HIDP_GLOBAL_UNIT_EXP_1);			// Unit Exponent FEh (-1d):	55 ff
+        //NEXT_BYTE(buffer, 0xff);
         NEXT_BYTE(buffer, HIDP_GLOBAL_LOG_MIN_1);			// LOGICAL_MINIMUM (0):		15 00
         NEXT_BYTE(buffer, 0x00);
-        NEXT_BYTE(buffer, HIDP_GLOBAL_LOG_MAX_4);			// LOGICAL_MAXIMUM (3599):	27 0F 0E 00 00
+        NEXT_BYTE(buffer, HIDP_GLOBAL_LOG_MAX_2);			// LOGICAL_MAXIMUM (3599):	26 0F 0E
         NEXT_SHORT(buffer, 0x0E0F);
-        NEXT_SHORT(buffer, 0x0000);
         NEXT_BYTE(buffer, HIDP_GLOBAL_PHY_MIN_1);			// PHYSICAL_MINIMUM (0):	35 00
         NEXT_BYTE(buffer, 0x00);
-        NEXT_BYTE(buffer, HIDP_GLOBAL_PHY_MAX_4);			// PHYSICAL_MAXIMUM (3599):	47 0F 0E 00 00
+        NEXT_BYTE(buffer, HIDP_GLOBAL_PHY_MAX_2);			// PHYSICAL_MAXIMUM (3599): 46 0F 0E
         NEXT_SHORT(buffer, 0x0E0F);
-        NEXT_SHORT(buffer, 0x0000);
         NEXT_BYTE(buffer, HIDP_GLOBAL_UNIT_1);			    // UNIT (Eng Rot:Angular Pos):	65 14
         NEXT_BYTE(buffer, 0x14);
         
