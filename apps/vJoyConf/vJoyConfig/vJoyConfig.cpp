@@ -661,7 +661,7 @@ int CreateHidReportDesc(void** data, UINT nButtons, bool* axes, int nPovHatsCont
         NEXT_BYTE(buffer, 0x01);
     } else if (nPovHatsCont) {
         // Continuous POV
-        //NEXT_BYTE(buffer, HIDP_GLOBAL_UNIT_EXP_1);			// Unit Exponent FEh (-1d):	55 ff
+        //NEXT_BYTE(buffer, HIDP_GLOBAL_UNIT_EXP_1);		  // Unit Exponent FEh (-1d):	55 ff
         //NEXT_BYTE(buffer, 0xff);
         NEXT_BYTE(buffer, HIDP_GLOBAL_LOG_MIN_1);			// LOGICAL_MINIMUM (0):		15 00
         NEXT_BYTE(buffer, 0x00);

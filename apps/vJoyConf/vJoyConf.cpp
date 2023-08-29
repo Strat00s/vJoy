@@ -1090,11 +1090,10 @@ int CreateHidReportDesc(void** data, UINT nButtons, bool* axes, int nPovHatsCont
 
     } else if (nPovHatsCont) {
         // Continuous POV
-        //NEXT_BYTE(buffer, HIDP_GLOBAL_UNIT_EXP_1);			// Unit Exponent FEh (-1d):	55 ff
+        //NEXT_BYTE(buffer, HIDP_GLOBAL_UNIT_EXP_1);		  // Unit Exponent FEh (-1d):	55 ff
         //NEXT_BYTE(buffer, 0xff);
         NEXT_BYTE(buffer, HIDP_GLOBAL_LOG_MIN_1);			// LOGICAL_MINIMUM (0):		15 00
         NEXT_BYTE(buffer, 0x00);
-        // TODO: use shorter maximum (16bits)
         NEXT_BYTE(buffer, HIDP_GLOBAL_LOG_MAX_2);			// LOGICAL_MAXIMUM (3599):	26 0F 0E
         NEXT_SHORT(buffer, 0x0E0F);
         NEXT_BYTE(buffer, HIDP_GLOBAL_PHY_MIN_1);			// PHYSICAL_MINIMUM (0):	35 00
